@@ -24,13 +24,14 @@ from test.util import SparkContextForTest
 @pytest.mark.slow
 class CamemBertForTokenClassificationTestSpec(unittest.TestCase):
     def setUp(self):
-        self.data = SparkContextForTest.spark.read.option("header", "true") \
-            .csv(path="file:///" + os.getcwd() + "/../src/test/resources/embeddings/sentence_embeddings.csv")
+        self.data = SparkContextForTest.spark.read.option("header", "true").csv(
+            path=f"file:///{os.getcwd()}/../src/test/resources/embeddings/sentence_embeddings.csv"
+        )
 
         self.tested_annotator = CamemBertForTokenClassification \
-            .pretrained() \
-            .setInputCols(["document", "token"]) \
-            .setOutputCol("ner")
+                .pretrained() \
+                .setInputCols(["document", "token"]) \
+                .setOutputCol("ner")
 
     def test_run(self):
         document_assembler = DocumentAssembler() \

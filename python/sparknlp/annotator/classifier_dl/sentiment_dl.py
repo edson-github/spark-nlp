@@ -201,13 +201,13 @@ class SentimentDLApproach(AnnotatorApproach, EvaluationDLParams, ClassifierEncod
             classname="com.johnsnowlabs.nlp.annotators.classifier.dl.SentimentDLApproach")
         self._setDefault(
             maxEpochs=30,
-            lr=float(0.005),
+            lr=0.005,
             batchSize=64,
-            dropout=float(0.5),
+            dropout=0.5,
             enableOutputLogs=False,
             evaluationLogExtended=False,
             threshold=0.6,
-            thresholdLabel="neutral"
+            thresholdLabel="neutral",
         )
 
 

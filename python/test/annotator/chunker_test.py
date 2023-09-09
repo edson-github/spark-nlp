@@ -27,10 +27,14 @@ class ChunkerTestSpec(unittest.TestCase):
     def setUp(self):
         from sparknlp.training import POS
         self.data = SparkContextForTest.data
-        self.train_pos = POS().readDataset(SparkContextForTest.spark,
-                                           os.getcwd() + "/../src/test/resources/anc-pos-corpus-small/test-training.txt",
-                                           delimiter="|", outputPosCol="tags", outputDocumentCol="document",
-                                           outputTextCol="text")
+        self.train_pos = POS().readDataset(
+            SparkContextForTest.spark,
+            f"{os.getcwd()}/../src/test/resources/anc-pos-corpus-small/test-training.txt",
+            delimiter="|",
+            outputPosCol="tags",
+            outputDocumentCol="document",
+            outputTextCol="text",
+        )
 
     def runTest(self):
         document_assembler = DocumentAssembler() \

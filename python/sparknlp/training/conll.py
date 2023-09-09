@@ -145,6 +145,5 @@ class CoNLL(ExtendedJavaWrapper):
 
         jdf = self._java_obj.readDataset(jSession, path, read_as, partitions,
                                          spark.sparkContext._getJavaStorageLevel(storage_level))
-        dataframe = self.getDataFrame(spark, jdf)
-        return dataframe
+        return self.getDataFrame(spark, jdf)
 

@@ -33,7 +33,7 @@ class DatasetEncoder:
         for sentence in sentences:
             dataset_words = [word for (word, tag) in sentence]
             word_embeddings = self.embeddings_resolver.resolve_sentence(dataset_words)
-            
+
             # Zip Embeddings and Tags
             words = []
             tags = []
@@ -41,30 +41,32 @@ class DatasetEncoder:
             tag_ids = []
             is_word_start = []
             embeddings = []
-            
+
             i = 0
-            
+
             for item in word_embeddings:
                 words.append(item.piece)
-                                
+
                 if item.is_word_start:
-                    assert i < len(sentence), 'i = {} is more or equal than length of {}, during zip with {}'.format(i, sentence, word_embeddings)
+                    assert i < len(
+                        sentence
+                    ), f'i = {i} is more or equal than length of {sentence}, during zip with {word_embeddings}'
                     tag = sentence[i][1]
                     i += 1
                 else:
                     tag = self.piece_tag
-                
+
                 tag_id = self.tag2id.get(tag, len(self.tag2id))
                 self.tag2id[tag] = tag_id
-                
+
                 tags.append(tag)
                 tag_ids.append(tag_id)
 
                 embeddings.append(item.vector)
                 is_word_start.append(item.is_word_start)
-                
+
                 char_ids.append(self.get_char_indexes(item.piece))
-               
+
             if len(sentence) > 0:
                 yield {
                         "words": words,

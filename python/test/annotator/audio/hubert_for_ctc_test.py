@@ -26,18 +26,20 @@ from test.util import SparkSessionForTest
 class HubertTestSetUp(unittest.TestCase):
 
     def setUp(self):
-        audio_path = os.getcwd() + "/../src/test/resources/audio/json/audio_floats.json"
+        audio_path = (
+            f"{os.getcwd()}/../src/test/resources/audio/json/audio_floats.json"
+        )
         self.data = SparkSessionForTest.spark.read.option("inferSchema", value=True).json(audio_path) \
-            .select(col("float_array").cast("array<float>").alias("audio_content"))
+                .select(col("float_array").cast("array<float>").alias("audio_content"))
 
         audio_assembler = AudioAssembler() \
-            .setInputCol("audio_content") \
-            .setOutputCol("audio_assembler")
+                .setInputCol("audio_content") \
+                .setOutputCol("audio_assembler")
 
         speech_to_text = HubertForCTC \
-            .pretrained() \
-            .setInputCols("audio_assembler") \
-            .setOutputCol("text")
+                .pretrained() \
+                .setInputCols("audio_assembler") \
+                .setOutputCol("text")
 
         pipeline = Pipeline(stages=[audio_assembler, speech_to_text])
         self.model = pipeline.fit(self.data)
@@ -61,8 +63,8 @@ class HubertForCTCTestSpec(HubertTestSetUp, unittest.TestCase):
 class LightHubertForCTCOneAudioTestSpec(HubertTestSetUp, unittest.TestCase):
     def setUp(self):
         super().setUp()
-        audio_path = os.getcwd() + "/../src/test/resources/audio/csv/audio_floats.csv"
-        self.audio_data = list()
+        audio_path = f"{os.getcwd()}/../src/test/resources/audio/csv/audio_floats.csv"
+        self.audio_data = []
         audio_file = open(audio_path, 'r')
         csv_lines = audio_file.readlines()
         for csv_line in csv_lines:
@@ -84,8 +86,8 @@ class LightHubertForCTCOneAudioTestSpec(HubertTestSetUp, unittest.TestCase):
 class LightHubertForCTCTestSpec(HubertTestSetUp, unittest.TestCase):
     def setUp(self):
         super().setUp()
-        audio_path = os.getcwd() + "/../src/test/resources/audio/csv/audio_floats.csv"
-        self.audio_data = list()
+        audio_path = f"{os.getcwd()}/../src/test/resources/audio/csv/audio_floats.csv"
+        self.audio_data = []
         audio_file = open(audio_path, 'r')
         csv_lines = audio_file.readlines()
         for csv_line in csv_lines:

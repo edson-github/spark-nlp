@@ -253,7 +253,7 @@ class YakeKeywordExtraction(AnnotatorModel):
         """
         return self.getOrDefault(self.stopWords)
 
-    def loadDefaultStopWords(language="english"):
+    def loadDefaultStopWords(self):
         """Loads the default stop words for the given language.
 
         Supported languages: danish, dutch, english, finnish, french, german,
@@ -267,4 +267,4 @@ class YakeKeywordExtraction(AnnotatorModel):
         """
         from pyspark.ml.wrapper import _jvm
         stopWordsObj = _jvm().org.apache.spark.ml.feature.StopWordsRemover
-        return list(stopWordsObj.loadDefaultStopWords(language))
+        return list(stopWordsObj.loadDefaultStopWords(self))

@@ -51,11 +51,7 @@ class AnnotationAudio:
         return AnnotationAudio(self.annotatorType, result, self.metadata)
 
     def __str__(self):
-        return "AnnotationAudio(%s, %s, %s)" % (
-            self.annotatorType,
-            str(self.result),
-            str(self.metadata)
-        )
+        return f"AnnotationAudio({self.annotatorType}, {str(self.result)}, {str(self.metadata)})"
 
     def __repr__(self):
         return self.__str__()

@@ -69,20 +69,17 @@ class TFNerDLGraphBuilder(Estimator, DefaultParamsWritable, DefaultParamsReadabl
         *value : str
             Input columns for the annotator
         """
-        if type(value[0]) == str or type(value[0]) == list:
-            self.inputColsValidation(value)
-            if len(value) == 1 and type(value[0]) == list:
-                return self._set(inputCols=value[0])
-            else:
-                return self._set(inputCols=list(value))
-        else:
+        if type(value[0]) not in [str, list]:
             raise TypeError("InputCols datatype not supported. It must be either str or list")
+        self.inputColsValidation(value)
+        return (
+            self._set(inputCols=value[0])
+            if len(value) == 1 and type(value[0]) == list
+            else self._set(inputCols=list(value))
+        )
 
     def inputColsValidation(self, value):
-        actual_columns = len(value)
-        if type(value[0]) == list:
-            actual_columns = len(value[0])
-
+        actual_columns = len(value[0]) if type(value[0]) == list else len(value)
         expected_columns = len(self.inputAnnotatorTypes)
 
         if actual_columns != expected_columns:
@@ -127,8 +124,6 @@ class TFNerDLGraphBuilder(Estimator, DefaultParamsWritable, DefaultParamsReadabl
     def _fit(self, dataset):
         from ..training.tfgraphs import tf_graph, tf_graph_1x
 
-        build_params = {}
-
         from sparknlp.internal import _NerDLGraphBuilder
 
         params_java = _NerDLGraphBuilder(
@@ -136,23 +131,19 @@ class TFNerDLGraphBuilder(Estimator, DefaultParamsWritable, DefaultParamsReadabl
             self.getInputCols(),
             self.getLabelColumn())._java_obj
         params = list(map(int, params_java.toString().replace("(", "").replace(")", "").split(",")))
-        build_params["ntags"] = params[0]
-        build_params["embeddings_dim"] = params[1]
-        build_params["nchars"] = params[2]
+        build_params = {
+            "ntags": params[0],
+            "embeddings_dim": params[1],
+            "nchars": params[2],
+        }
         if self.getHiddenUnitsNumber() is not None:
             build_params["lstm_size"] = self.getHiddenUnitsNumber()
 
-        graph_file = "auto"
-        if self.getGraphFile() is not None:
-            graph_file = self.getGraphFile()
-
-        graph_folder = ""
-        if self.getGraphFolder() is not None:
-            graph_folder = self.getGraphFolder()
-
+        graph_file = self.getGraphFile() if self.getGraphFile() is not None else "auto"
+        graph_folder = "" if self.getGraphFolder() is None else self.getGraphFolder()
         print("Ner DL Graph Builder configuration:")
-        print("Graph folder: {}".format(graph_folder))
-        print("Graph file name: {}".format(graph_file))
+        print(f"Graph folder: {graph_folder}")
+        print(f"Graph file name: {graph_file}")
         print("Build params: ", end="")
         print(build_params)
 

@@ -59,16 +59,20 @@ class TokenizerWithExceptionsTestSpec(unittest.TestCase):
         data = self.session.createDataFrame(
             [("My friend moved to New York. She likes it. Frank visited New York, and didn't like it.",)], ["text"])
         document_assembler = DocumentAssembler() \
-            .setInputCol("text") \
-            .setOutputCol("document")
-        tokenizer = Tokenizer() \
-            .setInputCols(["document"]) \
-            .setOutputCol("token") \
-            .setExceptionsPath(path="file:///" + os.getcwd() + "/../src/test/resources/token_exception_list.txt")
+                .setInputCol("text") \
+                .setOutputCol("document")
+        tokenizer = (
+            Tokenizer()
+            .setInputCols(["document"])
+            .setOutputCol("token")
+            .setExceptionsPath(
+                path=f"file:///{os.getcwd()}/../src/test/resources/token_exception_list.txt"
+            )
+        )
         finisher = Finisher() \
-            .setInputCols(["token"]) \
-            .setOutputCols(["token_out"]) \
-            .setOutputAsArray(True)
+                .setInputCols(["token"]) \
+                .setOutputCols(["token_out"]) \
+                .setOutputAsArray(True)
         assembled = document_assembler.transform(data)
         tokenized = tokenizer.fit(assembled).transform(assembled)
         finished = finisher.transform(tokenized)

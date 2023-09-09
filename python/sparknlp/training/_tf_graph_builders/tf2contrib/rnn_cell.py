@@ -52,8 +52,8 @@ def _get_concat_variable(name, shape, dtype, num_shards):
     if len(sharded_variable) == 1:
         return sharded_variable[0]
 
-    concat_name = name + "/concat"
-    concat_full_name = vs.get_variable_scope().name + "/" + concat_name + ":0"
+    concat_name = f"{name}/concat"
+    concat_full_name = f"{vs.get_variable_scope().name}/{concat_name}:0"
     for value in ops.get_collection(ops.GraphKeys.CONCATENATED_VARIABLES):
         if value.name == concat_full_name:
             return value
@@ -90,8 +90,7 @@ def _norm(g, b, inp, scope):
         # Initialize beta and gamma for use by layer_norm.
         vs.get_variable("gamma", shape=shape, initializer=gamma_init)
         vs.get_variable("beta", shape=shape, initializer=beta_init)
-    normalized = layers.layer_norm(inp, reuse=True, scope=scope)
-    return normalized
+    return layers.layer_norm(inp, reuse=True, scope=scope)
 
 
 class CoupledInputForgetGateLSTMCell(rnn_cell_impl.RNNCell):
@@ -597,7 +596,7 @@ class GridLSTMCell(rnn_cell_impl.RNNCell):
             for block_index in range(len(self._num_frequency_blocks)):
                 for freq_index in range(self._num_frequency_blocks[block_index]):
                     name_prefix = "state_f%02d_b%02d" % (freq_index, block_index)
-                    state_names += ("%s_c, %s_m," % (name_prefix, name_prefix))
+                    state_names += f"{name_prefix}_c, {name_prefix}_m,"
             self._state_tuple_type = collections.namedtuple("GridLSTMStateTuple",
                                                             state_names.strip(","))
             self._state_size = self._state_tuple_type(*(
@@ -746,8 +745,8 @@ class GridLSTMCell(rnn_cell_impl.RNNCell):
         for freq_index in range(len(freq_inputs)):
             if state_is_tuple:
                 name_prefix = "%s_f%02d_b%02d" % (state_prefix, freq_index, block)
-                c_prev_time = getattr(state, name_prefix + "_c")
-                m_prev_time = getattr(state, name_prefix + "_m")
+                c_prev_time = getattr(state, f"{name_prefix}_c")
+                m_prev_time = getattr(state, f"{name_prefix}_m")
             else:
                 c_prev_time = array_ops.slice(
                     state, [0, 2 * freq_index * self._num_units], [-1, self._num_units])
@@ -796,12 +795,11 @@ class GridLSTMCell(rnn_cell_impl.RNNCell):
             # forget gate activations
             if self._couple_input_forget_gates:
                 f_freq_g = 1.0 - i_freq_g
+            elif self._use_peepholes:
+                f_freq_g = sigmoid(f_freq + self._forget_bias + w_f_diag_freqf *
+                                   c_prev_freq + w_f_diag_freqt * c_prev_time)
             else:
-                if self._use_peepholes:
-                    f_freq_g = sigmoid(f_freq + self._forget_bias + w_f_diag_freqf *
-                                       c_prev_freq + w_f_diag_freqt * c_prev_time)
-                else:
-                    f_freq_g = sigmoid(f_freq + self._forget_bias)
+                f_freq_g = sigmoid(f_freq + self._forget_bias)
             # cell state
             c_freq = f_freq_g * c_prev_freq + i_freq_g * tanh(j_freq)
             if self._cell_clip is not None:
@@ -824,16 +822,24 @@ class GridLSTMCell(rnn_cell_impl.RNNCell):
             # forget gate activations
             if self._couple_input_forget_gates:
                 f_time_g = 1.0 - i_time_g
+            elif self._use_peepholes:
+                f_time_g = (
+                    sigmoid(
+                        f_time
+                        + self._forget_bias
+                        + w_f_diag_freqf * c_prev_freq
+                        + w_f_diag_freqt * c_prev_time
+                    )
+                    if self._share_time_frequency_weights
+                    else sigmoid(
+                        f_time
+                        + self._forget_bias
+                        + w_f_diag_timef * c_prev_freq
+                        + w_f_diag_timet * c_prev_time
+                    )
+                )
             else:
-                if self._use_peepholes:
-                    if self._share_time_frequency_weights:
-                        f_time_g = sigmoid(f_time + self._forget_bias + w_f_diag_freqf *
-                                           c_prev_freq + w_f_diag_freqt * c_prev_time)
-                    else:
-                        f_time_g = sigmoid(f_time + self._forget_bias + w_f_diag_timef *
-                                           c_prev_freq + w_f_diag_timet * c_prev_time)
-                else:
-                    f_time_g = sigmoid(f_time + self._forget_bias)
+                f_time_g = sigmoid(f_time + self._forget_bias)
             # cell state
             c_time = f_time_g * c_prev_time + i_time_g * tanh(j_time)
             if self._cell_clip is not None:
@@ -1036,7 +1042,7 @@ class BidirectionalGridLSTMCell(GridLSTMCell):
                 for freq_index in range(self._num_frequency_blocks[block_index]):
                     name_prefix = "%s_state_f%02d_b%02d" % (direction, freq_index,
                                                             block_index)
-                    state_names += ("%s_c, %s_m," % (name_prefix, name_prefix))
+                    state_names += f"{name_prefix}_c, {name_prefix}_m,"
         self._state_tuple_type = collections.namedtuple(
             "BidirectionalGridLSTMStateTuple", state_names.strip(","))
         self._state_size = self._state_tuple_type(*(
@@ -1159,7 +1165,8 @@ class AttentionCellWrapper(rnn_cell_impl.RNNCell):
                 "state_is_tuple is not set. State size is: %s" % str(cell.state_size))
         if attn_length <= 0:
             raise ValueError(
-                "attn_length should be greater than zero, got %s" % str(attn_length))
+                f"attn_length should be greater than zero, got {str(attn_length)}"
+            )
         if not state_is_tuple:
             logging.warn("%s: Using a concatenated state is slower and will soon be "
                          "deprecated.  Use state_is_tuple=True.", self)
@@ -1182,10 +1189,7 @@ class AttentionCellWrapper(rnn_cell_impl.RNNCell):
     def state_size(self):
         size = (self._cell.state_size, self._attn_size,
                 self._attn_size * self._attn_length)
-        if self._state_is_tuple:
-            return size
-        else:
-            return sum(list(size))
+        return size if self._state_is_tuple else sum(list(size))
 
     @property
     def output_size(self):
@@ -1290,7 +1294,7 @@ class HighwayWrapper(rnn_cell_impl.RNNCell):
         return self._cell.output_size
 
     def zero_state(self, batch_size, dtype):
-        with ops.name_scope(type(self).__name__ + "ZeroState", values=[batch_size]):
+        with ops.name_scope(f"{type(self).__name__}ZeroState", values=[batch_size]):
             return self._cell.zero_state(batch_size, dtype)
 
     def _highway(self, inp, out):
@@ -1421,8 +1425,7 @@ class LayerNormBasicLSTMCell(rnn_cell_impl.RNNCell):
             # Initialize beta and gamma for use by layer_norm.
             vs.get_variable("gamma", shape=shape, initializer=gamma_init, dtype=dtype)
             vs.get_variable("beta", shape=shape, initializer=beta_init, dtype=dtype)
-        normalized = layers.layer_norm(inp, reuse=True, scope=scope)
-        return normalized
+        return layers.layer_norm(inp, reuse=True, scope=scope)
 
     def _linear(self, args):
         out_size = 4 * self._num_units
@@ -1807,20 +1810,17 @@ class IntersectionRNNCell(rnn_cell_impl.RNNCell):
             raise ValueError("Could not infer input size from inputs.get_shape()[-1]")
 
         with vs.variable_scope(
-                vs.get_variable_scope(), initializer=self._initializer):
-            # read-in projections (should be used for first layer in deep +RNN
-            # to transform size of inputs from I --> N)
+                    vs.get_variable_scope(), initializer=self._initializer):
             if input_size.value != self._num_units:
-                if self._num_input_proj:
-                    with vs.variable_scope("in_projection"):
-                        if self._linear1 is None:
-                            self._linear1 = _Linear(inputs, self._num_units, True)
-                        inputs = self._linear1(inputs)
-                else:
+                if not self._num_input_proj:
                     raise ValueError("Must have input size == output size for "
                                      "Intersection RNN. To fix, num_in_proj should "
                                      "be set to num_units at cell init.")
 
+                with vs.variable_scope("in_projection"):
+                    if self._linear1 is None:
+                        self._linear1 = _Linear(inputs, self._num_units, True)
+                    inputs = self._linear1(inputs)
             n_dim = i_dim = self._num_units
             cell_inputs = array_ops.concat([inputs, state], 1)
             if self._linear2 is None:
@@ -1869,7 +1869,7 @@ class CompiledWrapper(rnn_cell_impl.RNNCell):
         return self._cell.output_size
 
     def zero_state(self, batch_size, dtype):
-        with ops.name_scope(type(self).__name__ + "ZeroState", values=[batch_size]):
+        with ops.name_scope(f"{type(self).__name__}ZeroState", values=[batch_size]):
             return self._cell.zero_state(batch_size, dtype)
 
     def __call__(self, inputs, state, scope=None):
@@ -2101,8 +2101,9 @@ class ConvLSTMCell(rnn_cell_impl.RNNCell):
         super(ConvLSTMCell, self).__init__(name=name)
 
         if conv_ndims != len(input_shape) - 1:
-            raise ValueError("Invalid input_shape {} for conv_ndims={}.".format(
-                input_shape, conv_ndims))
+            raise ValueError(
+                f"Invalid input_shape {input_shape} for conv_ndims={conv_ndims}."
+            )
 
         self._conv_ndims = conv_ndims
         self._input_shape = input_shape

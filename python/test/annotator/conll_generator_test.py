@@ -22,7 +22,9 @@ from sparknlp.util import CoNLLGenerator
 @pytest.mark.fast
 class CoNLLGeneratorTestSpec(unittest.TestCase):
     def setUp(self):
-        self.data = SparkContextForTest.spark.read.load("file:///" + os.getcwd() + "/../src/test/resources/conllgenerator/conllgenerator_nonint_token_metadata.parquet").cache()
+        self.data = SparkContextForTest.spark.read.load(
+            f"file:///{os.getcwd()}/../src/test/resources/conllgenerator/conllgenerator_nonint_token_metadata.parquet"
+        ).cache()
 
     def runTest(self):
         CoNLLGenerator.exportConllFiles(self.data, './tmp_noninttokens2')  # with sentence

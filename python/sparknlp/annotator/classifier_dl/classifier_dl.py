@@ -171,11 +171,11 @@ class ClassifierDLApproach(AnnotatorApproach, EvaluationDLParams, ClassifierEnco
             classname="com.johnsnowlabs.nlp.annotators.classifier.dl.ClassifierDLApproach")
         self._setDefault(
             maxEpochs=30,
-            lr=float(0.005),
+            lr=0.005,
             batchSize=64,
-            dropout=float(0.5),
+            dropout=0.5,
             enableOutputLogs=False,
-            evaluationLogExtended=False
+            evaluationLogExtended=False,
         )
 
 

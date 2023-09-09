@@ -35,7 +35,9 @@ class SpacyToAnnotationMultiDocTestSpec(SpacyToAnnotationTestSetUp, unittest.Tes
 
     def runTest(self):
         nlp_reader = SpacyToAnnotation()
-        result = nlp_reader.readJsonFile(self.spark, self.resources_path + "multi_doc_tokens.json")
+        result = nlp_reader.readJsonFile(
+            self.spark, f"{self.resources_path}multi_doc_tokens.json"
+        )
 
         self.assertTrue(result.select("document").count() > 0)
         self.assertTrue(result.select("sentence").count() > 0)
@@ -50,7 +52,9 @@ class SpacyToAnnotationWithoutSentenceTestSpec(SpacyToAnnotationTestSetUp, unitt
 
     def runTest(self):
         nlp_reader = SpacyToAnnotation()
-        result = nlp_reader.readJsonFile(self.spark, self.resources_path + "without_sentence_ends.json")
+        result = nlp_reader.readJsonFile(
+            self.spark, f"{self.resources_path}without_sentence_ends.json"
+        )
 
         self.assertTrue(result.select("document").count() > 0)
         self.assertTrue(result.select("token").count() > 0)

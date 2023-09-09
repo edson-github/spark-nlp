@@ -71,7 +71,7 @@ class LightPipeline:
     def _validateStagesInputCols(self, stages):
         annotator_types = self._getAnnotatorTypes(stages)
         for stage in stages:
-            if isinstance(stage, AnnotatorApproach) or isinstance(stage, AnnotatorModel):
+            if isinstance(stage, (AnnotatorApproach, AnnotatorModel)):
                 input_cols = stage.getInputCols()
                 if type(input_cols) == str:
                     input_cols = [input_cols]
@@ -86,10 +86,7 @@ class LightPipeline:
 
     def _skipPipelineValidation(self, stages):
         exceptional_pipeline = [stage for stage in stages if self._skipStageValidation(stage)]
-        if len(exceptional_pipeline) >= 1:
-            return True
-        else:
-            return False
+        return len(exceptional_pipeline) >= 1
 
     def _skipStageValidation(self, stage):
         return hasattr(stage, 'skipLPInputColsValidation') and stage.skipLPInputColsValidation
@@ -101,8 +98,9 @@ class LightPipeline:
                 output_cols = stage.getOutputCols()
                 for output_col in output_cols:
                     annotator_types[output_col] = stage.outputAnnotatorType
-            elif isinstance(stage, AnnotatorApproach) or isinstance(stage, AnnotatorModel) or\
-                    isinstance(stage, AnnotatorTransformer):
+            elif isinstance(
+                stage, (AnnotatorApproach, AnnotatorModel, AnnotatorTransformer)
+            ):
                 if stage.outputAnnotatorType is not None:
                     annotator_types[stage.getOutputCol()] = stage.outputAnnotatorType
         return annotator_types
@@ -134,10 +132,7 @@ class LightPipeline:
                                     annotation.metadata())
                 )
             else:
-                if self.parse_embeddings:
-                    embeddings = list(annotation.embeddings())
-                else:
-                    embeddings = []
+                embeddings = list(annotation.embeddings()) if self.parse_embeddings else []
                 annotations.append(
                     Annotation(annotation.annotatorType(),
                                annotation.begin(),
@@ -203,11 +198,10 @@ class LightPipeline:
             else:
                 raise TypeError(
                     "argument for annotation must be 'str' or list[str] or list[float] or list[list[float]]")
+        elif self.__isTextInput(target) and self.__isTextInput(optional_target):
+            result = self.__fullAnnotateQuestionAnswering(target, optional_target)
         else:
-            if self.__isTextInput(target) and self.__isTextInput(optional_target):
-                result = self.__fullAnnotateQuestionAnswering(target, optional_target)
-            else:
-                raise TypeError("arguments for annotation must be 'str' or list[str]")
+            raise TypeError("arguments for annotation must be 'str' or list[str]")
 
         return result
 
@@ -232,16 +226,14 @@ class LightPipeline:
     def __fullAnnotateText(self, target):
 
         if self.__isPath(target):
-            result = self.fullAnnotateImage(target)
-            return result
-        else:
-            result = []
-            if type(target) is str:
-                target = [target]
+            return self.fullAnnotateImage(target)
+        if type(target) is str:
+            target = [target]
 
-            for annotations_result in self._lightPipeline.fullAnnotateJava(target):
-                result.append(self.__buildStages(annotations_result))
-            return result
+        return [
+            self.__buildStages(annotations_result)
+            for annotations_result in self._lightPipeline.fullAnnotateJava(target)
+        ]
 
     def __isPath(self, target):
         if type(target) is list:
@@ -250,8 +242,7 @@ class LightPipeline:
         if target.find("/") < 0:
             return False
         else:
-            is_valid_file = _internal._ResourceHelper_validFile(target).apply()
-            return is_valid_file
+            return _internal._ResourceHelper_validFile(target).apply()
 
     def __fullAnnotateAudio(self, audios):
         result = []
@@ -260,9 +251,10 @@ class LightPipeline:
             result.append(self.__buildStages(annotations_dict))
         else:
             full_annotations = self._lightPipeline.fullAnnotateAudiosJava(audios)
-            for annotations_dict in full_annotations:
-                result.append(self.__buildStages(annotations_dict))
-
+            result.extend(
+                self.__buildStages(annotations_dict)
+                for annotations_dict in full_annotations
+            )
         return result
 
     def __fullAnnotateQuestionAnswering(self, question, context):
@@ -272,9 +264,10 @@ class LightPipeline:
             result.append(self.__buildStages(annotations_dict))
         else:
             full_annotations = self._lightPipeline.fullAnnotateJava(question, context)
-            for annotations_dict in full_annotations:
-                result.append(self.__buildStages(annotations_dict))
-
+            result.extend(
+                self.__buildStages(annotations_dict)
+                for annotations_dict in full_annotations
+            )
         return result
 
     def fullAnnotateImage(self, path_to_image):
@@ -300,20 +293,20 @@ class LightPipeline:
             path_to_image = [path_to_image]
 
         if type(path_to_image) is list:
-            result = []
-
-            for image_result in self._lightPipeline.fullAnnotateImageJava(path_to_image):
-                result.append(self.__buildStages(image_result))
-
-            return result
+            return [
+                self.__buildStages(image_result)
+                for image_result in self._lightPipeline.fullAnnotateImageJava(
+                    path_to_image
+                )
+            ]
         else:
             raise TypeError("argument for annotation may be 'str' or list[str]")
 
     def __buildStages(self, annotations_result):
-        stages = {}
-        for annotator_type, annotations in annotations_result.items():
-            stages[annotator_type] = self._annotationFromJava(annotations)
-        return stages
+        return {
+            annotator_type: self._annotationFromJava(annotations)
+            for annotator_type, annotations in annotations_result.items()
+        }
 
     def annotate(self, target, optional_target=""):
         """Annotates the data provided, extracting the results.

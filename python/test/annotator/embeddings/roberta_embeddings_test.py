@@ -25,11 +25,12 @@ from test.util import SparkContextForTest
 @pytest.mark.slow
 class RoBertaEmbeddingsTestSpec(unittest.TestCase, HasMaxSentenceLengthTests):
     def setUp(self):
-        self.data = SparkContextForTest.spark.read.option("header", "true") \
-            .csv(path="file:///" + os.getcwd() + "/../src/test/resources/embeddings/sentence_embeddings.csv")
+        self.data = SparkContextForTest.spark.read.option("header", "true").csv(
+            path=f"file:///{os.getcwd()}/../src/test/resources/embeddings/sentence_embeddings.csv"
+        )
         self.tested_annotator = RoBertaEmbeddings.pretrained() \
-            .setInputCols(["token", "document"]) \
-            .setOutputCol("RoBerta_embeddings")
+                .setInputCols(["token", "document"]) \
+                .setOutputCol("RoBerta_embeddings")
 
     def test_run(self):
         document_assembler = DocumentAssembler() \

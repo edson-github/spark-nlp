@@ -26,7 +26,9 @@ class EntityRulerTestSpec(unittest.TestCase):
 
     def setUp(self):
         self.data = SparkContextForTest.spark.createDataFrame([["John Snow lives in Winterfell"]]).toDF("text")
-        self.path = os.getcwd() + "/../src/test/resources/entity-ruler/keywords_only.json"
+        self.path = (
+            f"{os.getcwd()}/../src/test/resources/entity-ruler/keywords_only.json"
+        )
 
     def runTest(self):
         document_assembler = DocumentAssembler().setInputCol("text").setOutputCol("document")
@@ -48,7 +50,9 @@ class EntityRulerOneColumnTestSpec(unittest.TestCase):
 
     def setUp(self):
         self.data = SparkContextForTest.spark.createDataFrame([["John Snow lives in Winterfell"]]).toDF("text")
-        self.path = os.getcwd() + "/../src/test/resources/entity-ruler/keywords_only.json"
+        self.path = (
+            f"{os.getcwd()}/../src/test/resources/entity-ruler/keywords_only.json"
+        )
 
     def runTest(self):
         document_assembler = DocumentAssembler().setInputCol("text").setOutputCol("document")

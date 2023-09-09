@@ -27,12 +27,13 @@ class LongformerForTokenClassificationTestSpec(unittest.TestCase, HasMaxSentence
     valid_max_length = 4096
 
     def setUp(self):
-        self.data = SparkContextForTest.spark.read.option("header", "true") \
-            .csv(path="file:///" + os.getcwd() + "/../src/test/resources/embeddings/sentence_embeddings.csv")
+        self.data = SparkContextForTest.spark.read.option("header", "true").csv(
+            path=f"file:///{os.getcwd()}/../src/test/resources/embeddings/sentence_embeddings.csv"
+        )
 
         self.tested_annotator = LongformerForTokenClassification.pretrained() \
-            .setInputCols(["document", "token"]) \
-            .setOutputCol("ner")
+                .setInputCols(["document", "token"]) \
+                .setOutputCol("ner")
 
     def test_run(self):
         document_assembler = DocumentAssembler() \

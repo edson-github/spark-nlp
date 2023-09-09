@@ -24,8 +24,9 @@ from test.util import SparkSessionForTest
 @pytest.mark.slow
 class ClassifierDLTestSpec(unittest.TestCase):
     def setUp(self):
-        self.data = SparkSessionForTest.spark.read.option("header", "true") \
-            .csv(path="file:///" + os.getcwd() + "/../src/test/resources/classifier/sentiment.csv")
+        self.data = SparkSessionForTest.spark.read.option("header", "true").csv(
+            path=f"file:///{os.getcwd()}/../src/test/resources/classifier/sentiment.csv"
+        )
 
     def runTest(self):
         document_assembler = DocumentAssembler() \

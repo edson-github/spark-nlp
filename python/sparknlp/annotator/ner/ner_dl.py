@@ -378,24 +378,24 @@ class NerDLApproach(AnnotatorApproach, NerApproach, EvaluationDLParams):
     @keyword_only
     def __init__(self):
         super(NerDLApproach, self).__init__(classname="com.johnsnowlabs.nlp.annotators.ner.dl.NerDLApproach")
-        uc = False if sys.platform == 'win32' else True
+        uc = sys.platform != 'win32'
         self._setDefault(
             minEpochs=0,
             maxEpochs=50,
-            lr=float(0.001),
-            po=float(0.005),
+            lr=0.001,
+            po=0.005,
             batchSize=8,
-            dropout=float(0.5),
+            dropout=0.5,
             verbose=2,
             useContrib=uc,
-            validationSplit=float(0.0),
+            validationSplit=0.0,
             evaluationLogExtended=False,
             includeConfidence=False,
             includeAllConfidenceScores=False,
             enableOutputLogs=False,
             enableMemoryOptimizer=False,
             useBestModel=False,
-            bestModelMetric="f1_micro"
+            bestModelMetric="f1_micro",
         )
 
 

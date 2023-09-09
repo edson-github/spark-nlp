@@ -212,6 +212,6 @@ class Finisher(AnnotatorTransformer):
     def getOutputCols(self):
         """Gets output columns name of annotations."""
         if len(self.getOrDefault(self.outputCols)) == 0:
-            return ["finished_" + input_col for input_col in self.getInputCols()]
+            return [f"finished_{input_col}" for input_col in self.getInputCols()]
         else:
             return self.getOrDefault(self.outputCols)

@@ -35,7 +35,7 @@ class RecursiveEstimator(JavaEstimator, ABC):
 
     def fit(self, dataset, params=None, pipeline=None):
         if params is None:
-            params = dict()
+            params = {}
         if isinstance(params, (list, tuple)):
             models = [None] * len(params)
             for index, model in self.fitMultiple(dataset, params):
@@ -59,12 +59,12 @@ class RecursiveTransformer(JavaModel):
 
     def transform_recursive(self, dataset, recursive_pipeline, params=None):
         if params is None:
-            params = dict()
+            params = {}
         if isinstance(params, dict):
             if params:
                 return self.copy(params)._transform_recursive(dataset, recursive_pipeline)
             else:
                 return self._transform_recursive(dataset, recursive_pipeline)
         else:
-            raise ValueError("Params must be a param map but got %s." % type(params))
+            raise ValueError(f"Params must be a param map but got {type(params)}.")
 

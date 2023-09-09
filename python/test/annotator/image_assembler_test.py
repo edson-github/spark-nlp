@@ -24,8 +24,9 @@ from test.util import SparkSessionForTest
 class ImageAssemblerTestSpec(unittest.TestCase):
 
     def setUp(self):
-        self.data = SparkSessionForTest.spark.read.format("image")\
-            .load(path="file:///" + os.getcwd() + "/../src/test/resources/image/")
+        self.data = SparkSessionForTest.spark.read.format("image").load(
+            path=f"file:///{os.getcwd()}/../src/test/resources/image/"
+        )
 
     def runTest(self):
         image_assembler = ImageAssembler() \

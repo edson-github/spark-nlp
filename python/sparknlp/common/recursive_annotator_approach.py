@@ -31,5 +31,5 @@ class RecursiveAnnotatorApproach(_internal.RecursiveEstimator, JavaMLWritable, _
         self._setDefault(lazyAnnotator=False)
 
     def _create_model(self, java_model):
-        raise NotImplementedError('Please implement _create_model in %s' % self)
+        raise NotImplementedError(f'Please implement _create_model in {self}')
 

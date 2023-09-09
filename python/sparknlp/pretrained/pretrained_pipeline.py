@@ -86,8 +86,7 @@ class PretrainedPipeline:
         ['B-ORG', 'O', 'O', 'B-PER', 'O', 'O', 'B-LOC', 'O']
         """
 
-        annotations = self.light_model.annotate(target)
-        return annotations
+        return self.light_model.annotate(target)
 
     def fullAnnotate(self, target, optional_target=""):
         """Annotates the data provided into `Annotation` type results.
@@ -121,8 +120,7 @@ class PretrainedPipeline:
         Annotation(named_entity, 30, 36, B-LOC, {'word': 'Baghdad'}),
         Annotation(named_entity, 37, 37, O, {'word': '.'})]
         """
-        annotations = self.light_model.fullAnnotate(target, optional_target)
-        return annotations
+        return self.light_model.fullAnnotate(target, optional_target)
 
     def fullAnnotateImage(self, path_to_image):
         """Annotates the data provided into `Annotation` type results.
