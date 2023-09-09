@@ -33,11 +33,9 @@ graph_path = "/models/sent/graphs"
 def save_graph(graph, model_id):
     
     tf.io.write_graph(
-        graph, 
-        "/tmp/{}".format(model_id), 
-        "{}/{}.pb".format(graph_path, model_id), 
-        False)
-    print("Graph exported to {}/{}.pb".format(graph_path, model_id))
+        graph, f"/tmp/{model_id}", f"{graph_path}/{model_id}.pb", False
+    )
+    print(f"Graph exported to {graph_path}/{model_id}.pb")
     
 def make_cnn_model():
     global max_features, embedding_size, maxlen, kernel_size, dropout

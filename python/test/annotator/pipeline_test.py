@@ -30,27 +30,32 @@ class PipelineTestSpec(unittest.TestCase):
 
     def runTest(self):
         document_assembler = DocumentAssembler() \
-            .setInputCol("text") \
-            .setOutputCol("document")
+                .setInputCol("text") \
+                .setOutputCol("document")
         tokenizer = Tokenizer() \
-            .setInputCols(["document"]) \
-            .setOutputCol("token")
-        lemmatizer = Lemmatizer() \
-            .setInputCols(["token"]) \
-            .setOutputCol("lemma") \
-            .setDictionary("file:///" + os.getcwd() + "/../src/test/resources/lemma-corpus-small/simple.txt",
-                           key_delimiter="->", value_delimiter="\t")
+                .setInputCols(["document"]) \
+                .setOutputCol("token")
+        lemmatizer = (
+            Lemmatizer()
+            .setInputCols(["token"])
+            .setOutputCol("lemma")
+            .setDictionary(
+                f"file:///{os.getcwd()}/../src/test/resources/lemma-corpus-small/simple.txt",
+                key_delimiter="->",
+                value_delimiter="\t",
+            )
+        )
         finisher = Finisher() \
-            .setInputCols(["token", "lemma"]) \
-            .setOutputCols(["token_views", "lemma_views"]) \
-            .setOutputAsArray(False) \
-            .setAnnotationSplitSymbol('@') \
-            .setValueSplitSymbol('#')
+                .setInputCols(["token", "lemma"]) \
+                .setOutputCols(["token_views", "lemma_views"]) \
+                .setOutputAsArray(False) \
+                .setAnnotationSplitSymbol('@') \
+                .setValueSplitSymbol('#')
         pipeline = Pipeline(stages=[document_assembler, tokenizer, lemmatizer, finisher])
         model = pipeline.fit(self.data)
         token_before_save = model.transform(self.data).select("token_views").take(1)[0].token_views.split("@")[2]
         lemma_before_save = model.transform(self.data).select("lemma_views").take(1)[0].lemma_views.split("@")[2]
-        pipe_path = "file:///" + os.getcwd() + "/tmp_pipeline"
+        pipe_path = f"file:///{os.getcwd()}/tmp_pipeline"
         pipeline.write().overwrite().save(pipe_path)
         loaded_pipeline = Pipeline.read().load(pipe_path)
         token_after_save = model.transform(self.data).select("token_views").take(1)[0].token_views.split("@")[2]

@@ -186,13 +186,7 @@ class ElmoEmbeddings(AnnotatorModel,
         layer : str
             ELMO pooling layer
         """
-        if layer == "word_emb":
-            return self._set(poolingLayer=layer)
-        elif layer == "lstm_outputs1":
-            return self._set(poolingLayer=layer)
-        elif layer == "lstm_outputs2":
-            return self._set(poolingLayer=layer)
-        elif layer == "elmo":
+        if layer in ["word_emb", "lstm_outputs1", "lstm_outputs2", "elmo"]:
             return self._set(poolingLayer=layer)
         else:
             return self._set(poolingLayer="word_emb")

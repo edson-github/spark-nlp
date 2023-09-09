@@ -26,12 +26,13 @@ from test.util import SparkContextForTest
 class BertEmbeddingsTestSpec(unittest.TestCase, HasMaxSentenceLengthTests):
 
     def setUp(self):
-        self.data = SparkContextForTest.spark.read.option("header", "true") \
-            .csv(path="file:///" + os.getcwd() + "/../src/test/resources/embeddings/sentence_embeddings.csv")
+        self.data = SparkContextForTest.spark.read.option("header", "true").csv(
+            path=f"file:///{os.getcwd()}/../src/test/resources/embeddings/sentence_embeddings.csv"
+        )
 
         self.tested_annotator = BertEmbeddings.pretrained() \
-            .setInputCols(["sentence", "token"]) \
-            .setOutputCol("embeddings")
+                .setInputCols(["sentence", "token"]) \
+                .setOutputCol("embeddings")
 
     def test_run(self):
         document_assembler = DocumentAssembler() \
@@ -60,23 +61,28 @@ class BertEmbeddingsTestSpec(unittest.TestCase, HasMaxSentenceLengthTests):
 class BertEmbeddingsLoadSavedModelTestSpec(unittest.TestCase):
 
     def setUp(self):
-        self.data = SparkContextForTest.spark.read.option("header", "true") \
-            .csv(path="file:///" + os.getcwd() + "/../src/test/resources/embeddings/sentence_embeddings.csv")
+        self.data = SparkContextForTest.spark.read.option("header", "true").csv(
+            path=f"file:///{os.getcwd()}/../src/test/resources/embeddings/sentence_embeddings.csv"
+        )
 
     def runTest(self):
         document_assembler = DocumentAssembler() \
-            .setInputCol("text") \
-            .setOutputCol("document")
+                .setInputCol("text") \
+                .setOutputCol("document")
         sentence_detector = SentenceDetector() \
-            .setInputCols(["document"]) \
-            .setOutputCol("sentence")
+                .setInputCols(["document"]) \
+                .setOutputCol("sentence")
         tokenizer = Tokenizer() \
-            .setInputCols(["sentence"]) \
-            .setOutputCol("token")
-        albert = BertEmbeddings.loadSavedModel(os.getcwd() + "/../src/test/resources/tf-hub-bert/model",
-                                               SparkContextForTest.spark) \
-            .setInputCols(["sentence", "token"]) \
+                .setInputCols(["sentence"]) \
+                .setOutputCol("token")
+        albert = (
+            BertEmbeddings.loadSavedModel(
+                f"{os.getcwd()}/../src/test/resources/tf-hub-bert/model",
+                SparkContextForTest.spark,
+            )
+            .setInputCols(["sentence", "token"])
             .setOutputCol("embeddings")
+        )
 
         pipeline = Pipeline(stages=[
             document_assembler,

@@ -26,7 +26,7 @@ class NerModel:
             self.session = tf.compat.v1.Session(config=tf.compat.v1.ConfigProto(
                 allow_soft_placement=True,
                 log_device_placement=False))
-        with tf.compat.v1.device('/gpu:{}'.format(self.use_gpu_device)):
+        with tf.compat.v1.device(f'/gpu:{self.use_gpu_device}'):
             with tf.compat.v1.variable_scope("char_repr"):
                 # shape = (batch size, sentence, word)
                 self.char_ids = tf.compat.v1.placeholder(tf.int32, shape=[None, None, None], name="char_ids")
@@ -54,7 +54,7 @@ class NerModel:
     def add_bilstm_char_repr(self, nchars=101, dim=25, hidden=25):
         self._char_bilstm_added = True
 
-        with tf.compat.v1.device('/gpu:{}'.format(self.use_gpu_device)):
+        with tf.compat.v1.device(f'/gpu:{self.use_gpu_device}'):
 
             with tf.compat.v1.variable_scope("char_repr_lstm"):
                 # 1. Lookup for character embeddings
@@ -104,7 +104,7 @@ class NerModel:
     def add_cnn_char_repr(self, nchars=101, dim=25, nfilters=25, pad=2):
         self._char_cnn_added = True
 
-        with tf.compat.v1.device('/gpu:{}'.format(self.use_gpu_device)):
+        with tf.compat.v1.device(f'/gpu:{self.use_gpu_device}'):
 
             with tf.compat.v1.variable_scope("char_repr_cnn") as scope:
                 # 1. Lookup for character embeddings
@@ -146,7 +146,7 @@ class NerModel:
     def add_pretrained_word_embeddings(self, dim=100):
         self._word_embeddings_added = True
 
-        with tf.compat.v1.device('/gpu:{}'.format(self.use_gpu_device)):
+        with tf.compat.v1.device(f'/gpu:{self.use_gpu_device}'):
             with tf.compat.v1.variable_scope("word_repr") as scope:
                 # shape = (batch size, sentence, dim)
                 self.word_embeddings = tf.compat.v1.placeholder(tf.float32, shape=[None, None, dim],
@@ -159,7 +159,7 @@ class NerModel:
 
     def _create_lstm_layer(self, inputs, hidden_size, lengths):
 
-        with tf.compat.v1.device('/gpu:{}'.format(self.use_gpu_device)):
+        with tf.compat.v1.device(f'/gpu:{self.use_gpu_device}'):
             if not self.use_contrib:
                 model = tf.keras.Sequential([
                     tf.keras.layers.Bidirectional(
@@ -190,7 +190,7 @@ class NerModel:
 
     def _multiply_layer(self, source, result_size, activation=tf.nn.relu):
 
-        with tf.compat.v1.device('/gpu:{}'.format(self.use_gpu_device)):
+        with tf.compat.v1.device(f'/gpu:{self.use_gpu_device}'):
             ntime_steps = tf.shape(input=source)[1]
             source_size = source.shape[2]
 
@@ -216,22 +216,17 @@ class NerModel:
 
     # Adds Bi LSTM with size of each cell hidden_size
     def add_context_repr(self, ntags, hidden_size=100, height=1, residual=True):
-        assert (self._word_embeddings_added or self._char_cnn_added or self._char_bilstm_added,
-                "Add word embeddings by method add_word_embeddings " +
-                "or add char representation by method add_bilstm_char_repr " +
-                "or add_bilstm_char_repr before adding context layer")
-
         self._context_added = True
         self.ntags = ntags
 
-        with tf.compat.v1.device('/gpu:{}'.format(self.use_gpu_device)):
+        with tf.compat.v1.device(f'/gpu:{self.use_gpu_device}'):
             context_repr = self._multiply_layer(self.word_repr, 2 * hidden_size)
             # Please use `rate` instead of `keep_prob`. Rate should be set to `rate = 1 - keep_prob`
             context_repr = tf.nn.dropout(x=context_repr, rate=1 - self.dropout)
 
             with tf.compat.v1.variable_scope("context_repr"):
                 for i in range(height):
-                    with tf.compat.v1.variable_scope('lstm-{}'.format(i)):
+                    with tf.compat.v1.variable_scope(f'lstm-{i}'):
                         new_repr = self._create_lstm_layer(context_repr, hidden_size,
                                                            lengths=self.sentence_lengths)
 
@@ -248,11 +243,9 @@ class NerModel:
                 tf.identity(self.predicted_labels, "predicted_labels")
 
     def add_inference_layer(self, crf=False, predictions_op_name=None):
-        assert (self._context_added,
-                "Add context representation layer by method add_context_repr before adding inference layer")
         self._inference_added = True
 
-        with tf.device('/gpu:{}'.format(self.use_gpu_device)):
+        with tf.device(f'/gpu:{self.use_gpu_device}'):
 
             with tf.compat.v1.variable_scope("inference", reuse=None) as scope:
 
@@ -304,11 +297,9 @@ class NerModel:
 
     # clip_gradient < 0  - no gradient clipping
     def add_training_op(self, clip_gradient=2.0, train_op_name=None):
-        assert (self._inference_added,
-                "Add inference layer by method add_inference_layer before adding training layer")
         self._training_added = True
 
-        with tf.compat.v1.device('/gpu:{}'.format(self.use_gpu_device)):
+        with tf.compat.v1.device(f'/gpu:{self.use_gpu_device}'):
 
             with tf.compat.v1.variable_scope("training", reuse=None):
                 if train_op_name:
@@ -327,17 +318,12 @@ class NerModel:
 
     @staticmethod
     def num_trues(array):
-        result = 0
-        for item in array:
-            if item == True:
-                result += 1
-
-        return result
+        return sum(1 for item in array if item == True)
 
     @staticmethod
     def fill(array, l, val):
         result = array[:]
-        for i in range(l - len(array)):
+        for _ in range(l - len(array)):
             result.append(val)
         return result
 
@@ -351,14 +337,16 @@ class NerModel:
 
     @staticmethod
     def get_word_lengths(batch, idx="char_ids"):
-        max_words = max([len(row[idx]) for row in batch])
+        max_words = max(len(row[idx]) for row in batch)
         return [NerModel.fill([len(chars) for chars in row[idx]], max_words, 0)
                 for row in batch]
 
     @staticmethod
     def get_char_ids(batch, idx="char_ids"):
-        max_chars = max([max([len(char_ids) for char_ids in sentence[idx]]) for sentence in batch])
-        max_words = max([len(sentence[idx]) for sentence in batch])
+        max_chars = max(
+            max(len(char_ids) for char_ids in sentence[idx]) for sentence in batch
+        )
+        max_words = max(len(sentence[idx]) for sentence in batch)
 
         return [
             NerModel.fill(
@@ -369,8 +357,8 @@ class NerModel:
 
     @staticmethod
     def get_from_batch(batch, idx):
-        k = max([len(row[idx]) for row in batch])
-        return list([NerModel.fill(row[idx], k, 0) for row in batch])
+        k = max(len(row[idx]) for row in batch)
+        return [NerModel.fill(row[idx], k, 0) for row in batch]
 
     @staticmethod
     def get_tag_ids(batch, idx="tag_ids"):
@@ -379,12 +367,11 @@ class NerModel:
     @staticmethod
     def get_word_embeddings(batch, idx="word_embeddings"):
         embeddings_dim = len(batch[0][idx][0])
-        max_words = max([len(sentence[idx]) for sentence in batch])
+        max_words = max(len(sentence[idx]) for sentence in batch)
         return [
-            NerModel.fill([word_embedding for word_embedding in sentence[idx]],
-                          max_words, [0] * embeddings_dim
-                          )
-            for sentence in batch]
+            NerModel.fill(list(sentence[idx]), max_words, [0] * embeddings_dim)
+            for sentence in batch
+        ]
 
     @staticmethod
     def slice(dataset, batch_size=10):
@@ -404,10 +391,8 @@ class NerModel:
               init_variables=False
               ):
 
-        assert (self._training_added, "Add training layer by method add_training_op before running training")
-
         if init_variables:
-            with tf.compat.v1.device('/gpu:{}'.format(self.use_gpu_device)):
+            with tf.compat.v1.device(f'/gpu:{self.use_gpu_device}'):
                 self.session.run(tf.compat.v1.global_variables_initializer())
 
         print('trainig started')
@@ -429,8 +414,8 @@ class NerModel:
                 mean_loss, _ = self.session.run([self.loss, self.train_op], feed_dict=feed_dict)
                 sum_loss += mean_loss
 
-            print("epoch {}".format(epoch))
-            print("mean loss: {}".format(sum_loss))
+            print(f"epoch {epoch}")
+            print(f"mean loss: {sum_loss}")
             print()
             sys.stdout.flush()
 
@@ -475,9 +460,11 @@ class NerModel:
                     if p == c:
                         correct_predicted[p] = correct_predicted.get(p, 0) + 1
 
-        num_correct_predicted = sum([correct_predicted.get(i, 0) for i in range(1, self.ntags)])
-        num_predicted = sum([predicted.get(i, 0) for i in range(1, self.ntags)])
-        num_correct = sum([correct.get(i, 0) for i in range(1, self.ntags)])
+        num_correct_predicted = sum(
+            correct_predicted.get(i, 0) for i in range(1, self.ntags)
+        )
+        num_predicted = sum(predicted.get(i, 0) for i in range(1, self.ntags))
+        num_correct = sum(correct.get(i, 0) for i in range(1, self.ntags))
 
         prec = num_correct_predicted / (num_predicted or 1.)
         rec = num_correct_predicted / (num_correct or 1.)
@@ -518,11 +505,7 @@ class NerModel:
             batch_prediction = np.reshape(prediction, (len(batch), -1))
 
             for i in range(len(batch)):
-                sentence = []
-                for word in range(sentence_lengths[i]):
-                    tag = batch_prediction[i][word]
-                    sentence.append(tag)
-
+                sentence = [batch_prediction[i][word] for word in range(sentence_lengths[i])]
                 result.append(sentence)
 
         return result

@@ -27,27 +27,27 @@ class PushToHub:
         'Dependency Parser',
         'Pipeline Public']
 
-    def zip_directory(folder_path: str, zip_path: str):
+    def zip_directory(self, zip_path: str):
         """Zips folder for pushing to hub.
 
         folder_path:Path to the folder to zip.
         zip_path:Path of the zip file to create."""
 
         with zipfile.ZipFile(zip_path, mode='w') as zipf:
-            len_dir_path = len(folder_path)
-            for root, _, files in os.walk(folder_path):
+            len_dir_path = len(self)
+            for root, _, files in os.walk(self):
                 for file in files:
                     file_path = os.path.join(root, file)
                     zipf.write(file_path, file_path[len_dir_path:])
 
-    def unzip_directory(zip_path: str):
+    def unzip_directory(self):
         """Unzips Model to check for required files for upload.
 
         Keyword Arguments:
         zip_path:Zip Path to unzip.
         """
 
-    def check_for_required_info(model_data: dict):
+    def check_for_required_info(self):
         """Checks if the required fields exist in given dictionary  and fills any remaining fields.
 
         Keyword Arguments: 
@@ -56,41 +56,19 @@ class PushToHub:
         
         list_of_required_fields = ['name', 'task', 'language', 'pythonCode', 'model_zip_path']
 
-        if model_data['task'] not in PushToHub.list_of_tasks:
+        if self['task'] not in PushToHub.list_of_tasks:
             list_of_tasks_string_version = "\n".join(PushToHub.list_of_tasks)
             raise ValueError(
                 f"""Invalid task, please pick one of the following tasks\n{list_of_tasks_string_version}""")
 
-        if model_data['model_zip_path'].endswith(".zip"):
-            with zipfile.ZipFile(model_data['model_zip_path']) as modelfile:
+        if self['model_zip_path'].endswith(".zip"):
+            with zipfile.ZipFile(self['model_zip_path']) as modelfile:
                 if 'metadata/part-00000' not in modelfile.namelist():
                     raise ValueError("The Model is not a Spark Saved Model.")
-        else:
-            if not os.path.exists(f"{model_data['model_zip_path']}/metadata/part-00000"):
-                raise ValueError("The Model is not a Spark Saved Model.")
+        elif not os.path.exists(f"{self['model_zip_path']}/metadata/part-00000"):
+            raise ValueError("The Model is not a Spark Saved Model.")
 
-    def push_to_hub(name: str,
-                    language: str,
-                    model_zip_path: str,
-                    task: str,
-                    pythonCode: str,
-                    GIT_TOKEN: str,
-                    title: str = None,
-                    tags: List[str] = None,
-                    dependencies: str = None,
-                    description: str = None,
-                    predictedEntities: str = None,
-                    sparknlpVersion: str = None,
-                    howToUse: str = None,
-                    liveDemo: str = None,
-                    runInColab: str = None,
-                    scalaCode: str = None,
-                    nluCode: str = None,
-                    results: str = None,
-                    dataSource: str = None,
-                    includedModels: str = None,
-                    benchmarking: str = None,
-                    ) -> str:
+    def push_to_hub(self, language: str, model_zip_path: str, task: str, pythonCode: str, GIT_TOKEN: str, title: str = None, tags: List[str] = None, dependencies: str = None, description: str = None, predictedEntities: str = None, sparknlpVersion: str = None, howToUse: str = None, liveDemo: str = None, runInColab: str = None, scalaCode: str = None, nluCode: str = None, results: str = None, dataSource: str = None, includedModels: str = None, benchmarking: str = None) -> str:
         """Pushes model to Hub.
 
         Keyword Arguments:
@@ -109,10 +87,10 @@ class PushToHub:
 
         if r1.status_code == 201:
             r2 = requests.post(
-                'https://modelshub.johnsnowlabs.com/api/v1/models/%s/file' % r1.json()['id'],
-                data=open(model_data['model_zip_path'], 'rb'), headers={
-                    'Authorization': f'Bearer {GIT_TOKEN}'
-                })
+                f"https://modelshub.johnsnowlabs.com/api/v1/models/{r1.json()['id']}/file",
+                data=open(model_data['model_zip_path'], 'rb'),
+                headers={'Authorization': f'Bearer {GIT_TOKEN}'},
+            )
             if r2.status_code == 200:
                 print(r2.json()['message'])
                 return r2.json()['message']
@@ -120,30 +98,31 @@ class PushToHub:
             print(f"Something Went Wrong During the Upload. Got Status Code: {r1.status_code}")
             return f"Something Went Wrong During the Upload. Got Status Code: {r1.status_code}"
 
-    def create_docs(dicionary_for_upload: dict) -> dict:
+    def create_docs(self) -> dict:
         """Adds fields in the dictionary for pushing to hub.
 
         Keyword Arguments:
         dictionary_for_upload: The dictionary to add keys to.
         """
 
-        dicionary_for_upload['sparkVersion'] = "3.0"
-        dicionary_for_upload['license'] = 'Open Source'
-        dicionary_for_upload['supported'] = False
+        self['sparkVersion'] = "3.0"
+        self['license'] = 'Open Source'
+        self['supported'] = False
 
-        if 'sparknlpVersion' not in dicionary_for_upload.keys():
-            dicionary_for_upload['sparknlpVersion'] = "Spark NLP " + sparknlp.version()
+        if 'sparknlpVersion' not in self.keys():
+            self['sparknlpVersion'] = f"Spark NLP {sparknlp.version()}"
 
-        if 'description' not in dicionary_for_upload.keys():
-            dicionary_for_upload[
-                'description'] = f"This model is used for {dicionary_for_upload['task']} and this model works with {dicionary_for_upload['language']} language"
+        if 'description' not in self.keys():
+            self[
+                'description'
+            ] = f"This model is used for {self['task']} and this model works with {self['language']} language"
 
-        if 'title' not in dicionary_for_upload.keys():
-            dicionary_for_upload[
-                'title'] = f"{dicionary_for_upload['task']} for {dicionary_for_upload['language']} language"
+        if 'title' not in self.keys():
+            self['title'] = f"{self['task']} for {self['language']} language"
 
-        if os.path.isdir(dicionary_for_upload['model_zip_path']):
-            PushToHub.zip_directory(dicionary_for_upload['model_zip_path'],
-                                    f"{dicionary_for_upload['model_zip_path']}.zip")
-            dicionary_for_upload['model_zip_path'] = dicionary_for_upload['model_zip_path'] + '.zip'
-        return dicionary_for_upload
+        if os.path.isdir(self['model_zip_path']):
+            PushToHub.zip_directory(
+                self['model_zip_path'], f"{self['model_zip_path']}.zip"
+            )
+            self['model_zip_path'] = self['model_zip_path'] + '.zip'
+        return self

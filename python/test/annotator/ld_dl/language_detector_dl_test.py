@@ -25,10 +25,13 @@ from test.util import SparkContextForTest
 class LanguageDetectorDLTestSpec(unittest.TestCase):
 
     def setUp(self):
-        self.data = SparkContextForTest.spark.read \
-            .option("delimiter", "|") \
-            .option("header", "true") \
-            .csv(path="file:///" + os.getcwd() + "/../src/test/resources/language-detector/multilingual_sample.txt")
+        self.data = (
+            SparkContextForTest.spark.read.option("delimiter", "|")
+            .option("header", "true")
+            .csv(
+                path=f"file:///{os.getcwd()}/../src/test/resources/language-detector/multilingual_sample.txt"
+            )
+        )
 
     def runTest(self):
         document_assembler = DocumentAssembler() \

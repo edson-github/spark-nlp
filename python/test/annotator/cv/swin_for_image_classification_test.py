@@ -35,18 +35,18 @@ class SwinForImageClassificationTestSetUp(unittest.TestCase):
         "tractor.JPEG": "tractor",
     }
     def setUp(self):
-        self.images_path = os.getcwd() + "/../src/test/resources/image/"
+        self.images_path = f"{os.getcwd()}/../src/test/resources/image/"
         self.data = SparkSessionForTest.spark.read.format("image") \
-            .load(path=self.images_path)
+                .load(path=self.images_path)
 
         image_assembler = ImageAssembler() \
-            .setInputCol("image") \
-            .setOutputCol("image_assembler")
+                .setInputCol("image") \
+                .setOutputCol("image_assembler")
 
         imageClassifier = SwinForImageClassification \
-            .pretrained() \
-            .setInputCols("image_assembler") \
-            .setOutputCol("class")
+                .pretrained() \
+                .setInputCols("image_assembler") \
+                .setOutputCol("class")
 
         pipeline = Pipeline(stages=[
             image_assembler,
@@ -78,7 +78,9 @@ class LightSwinForImageClassificationOneImageTestSpec(SwinForImageClassification
     def runTest(self):
         light_pipeline = LightPipeline(self.model)
 
-        annotations_result = light_pipeline.fullAnnotateImage(self.images_path + "hippopotamus.JPEG")
+        annotations_result = light_pipeline.fullAnnotateImage(
+            f"{self.images_path}hippopotamus.JPEG"
+        )
 
         self.assertEqual(len(annotations_result), 1)
         for result in annotations_result:
@@ -94,7 +96,10 @@ class LightSwinForImageClassificationTestSpec(SwinForImageClassificationTestSetU
 
     def runTest(self):
         light_pipeline = LightPipeline(self.model)
-        images = [self.images_path + "hippopotamus.JPEG", self.images_path + "egyptian_cat.jpeg"]
+        images = [
+            f"{self.images_path}hippopotamus.JPEG",
+            f"{self.images_path}egyptian_cat.jpeg",
+        ]
 
         annotations_result = light_pipeline.fullAnnotateImage(images)
 

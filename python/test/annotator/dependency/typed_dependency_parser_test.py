@@ -26,15 +26,19 @@ class TypedDependencyParserConllUTestSpec(unittest.TestCase):
 
     def setUp(self):
         self.data = SparkContextForTest.spark \
-            .createDataFrame([["I saw a girl with a telescope"]]).toDF("text")
-        self.corpus = os.getcwd() + "/../src/test/resources/anc-pos-corpus-small/"
-        self.conllu = os.getcwd() + "/../src/test/resources/parser/unlabeled/conll-u/train_small.conllu.txt"
-        self.conllu = os.getcwd() + "/../src/test/resources/parser/labeled/train_small.conllu.txt"
+                .createDataFrame([["I saw a girl with a telescope"]]).toDF("text")
+        self.corpus = f"{os.getcwd()}/../src/test/resources/anc-pos-corpus-small/"
+        self.conllu = f"{os.getcwd()}/../src/test/resources/parser/unlabeled/conll-u/train_small.conllu.txt"
+        self.conllu = f"{os.getcwd()}/../src/test/resources/parser/labeled/train_small.conllu.txt"
         from sparknlp.training import POS
-        self.train_pos = POS().readDataset(SparkContextForTest.spark,
-                                           os.getcwd() + "/../src/test/resources/anc-pos-corpus-small/test-training.txt",
-                                           delimiter="|", outputPosCol="tags", outputDocumentCol="document",
-                                           outputTextCol="text")
+        self.train_pos = POS().readDataset(
+            SparkContextForTest.spark,
+            f"{os.getcwd()}/../src/test/resources/anc-pos-corpus-small/test-training.txt",
+            delimiter="|",
+            outputPosCol="tags",
+            outputDocumentCol="document",
+            outputTextCol="text",
+        )
 
     def runTest(self):
         document_assembler = DocumentAssembler() \
@@ -81,15 +85,19 @@ class TypedDependencyParserConll2009TestSpec(unittest.TestCase):
 
     def setUp(self):
         self.data = SparkContextForTest.spark \
-            .createDataFrame([["I saw a girl with a telescope"]]).toDF("text")
-        self.corpus = os.getcwd() + "/../src/test/resources/anc-pos-corpus-small/"
-        self.tree_bank = os.getcwd() + "/../src/test/resources/parser/unlabeled/dependency_treebank"
-        self.conll2009 = os.getcwd() + "/../src/test/resources/parser/labeled/example.train.conll2009"
+                .createDataFrame([["I saw a girl with a telescope"]]).toDF("text")
+        self.corpus = f"{os.getcwd()}/../src/test/resources/anc-pos-corpus-small/"
+        self.tree_bank = f"{os.getcwd()}/../src/test/resources/parser/unlabeled/dependency_treebank"
+        self.conll2009 = f"{os.getcwd()}/../src/test/resources/parser/labeled/example.train.conll2009"
         from sparknlp.training import POS
-        self.train_pos = POS().readDataset(SparkContextForTest.spark,
-                                           os.getcwd() + "/../src/test/resources/anc-pos-corpus-small/test-training.txt",
-                                           delimiter="|", outputPosCol="tags", outputDocumentCol="document",
-                                           outputTextCol="text")
+        self.train_pos = POS().readDataset(
+            SparkContextForTest.spark,
+            f"{os.getcwd()}/../src/test/resources/anc-pos-corpus-small/test-training.txt",
+            delimiter="|",
+            outputPosCol="tags",
+            outputDocumentCol="document",
+            outputTextCol="text",
+        )
 
     def runTest(self):
         document_assembler = DocumentAssembler() \

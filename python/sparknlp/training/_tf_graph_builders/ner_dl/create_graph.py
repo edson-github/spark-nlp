@@ -18,7 +18,7 @@ def create_graph(
     tf.reset_default_graph()
 
     if model_filename is None:
-        model_filename = 'blstm' + '_{}_{}_{}_{}'.format(ntags, embeddings_dim, lstm_size, nchars) + '.pb'
+        model_filename = f'blstm_{ntags}_{embeddings_dim}_{lstm_size}_{nchars}.pb'
 
     with tf.Session() as session:
         ner = NerModel(session=None, use_gpu_device=gpu_device)

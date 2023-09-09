@@ -344,8 +344,13 @@ class _DownloadModelDirectly(ExtendedJavaWrapper):
 
 class _DownloadModel(ExtendedJavaWrapper):
     def __init__(self, reader, name, language, remote_loc, validator):
-        super(_DownloadModel, self).__init__("com.johnsnowlabs.nlp.pretrained." + validator + ".downloadModel", reader,
-                                             name, language, remote_loc)
+        super(_DownloadModel, self).__init__(
+            f"com.johnsnowlabs.nlp.pretrained.{validator}.downloadModel",
+            reader,
+            name,
+            language,
+            remote_loc,
+        )
 
 
 class _DownloadPipeline(ExtendedJavaWrapper):

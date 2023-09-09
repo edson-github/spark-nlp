@@ -29,8 +29,10 @@ class SparkSessionForTest:
     spark.sparkContext.setLogLevel("WARN")
 
 
+
+
 class SparkContextForTest:
-    parquet_file = "file:///" + os.getcwd() + "/../src/test/resources/sentiment.parquet"
+    parquet_file = f"file:///{os.getcwd()}/../src/test/resources/sentiment.parquet"
     spark = SparkSessionForTest.spark
     data = spark. \
         read \

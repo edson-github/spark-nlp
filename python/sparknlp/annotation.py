@@ -85,10 +85,14 @@ class Annotation:
         same_metadata = dict(self.metadata) == other.metadata
         same_embeddings = self.embeddings == other.embeddings
 
-        same_annotation = \
-            same_annotator_type and same_result and same_begin and same_end and same_metadata and same_embeddings
-
-        return same_annotation
+        return (
+            same_annotator_type
+            and same_result
+            and same_begin
+            and same_end
+            and same_metadata
+            and same_embeddings
+        )
 
     @staticmethod
     def dataType():

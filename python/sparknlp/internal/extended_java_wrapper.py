@@ -46,12 +46,10 @@ class ExtendedJavaWrapper(JavaWrapper):
         return java_array
 
     def new_java_array_string(self, pylist):
-        java_array = self._new_java_array(pylist, self.sc._gateway.jvm.java.lang.String)
-        return java_array
+        return self._new_java_array(pylist, self.sc._gateway.jvm.java.lang.String)
 
     def new_java_array_integer(self, pylist):
-        java_array = self._new_java_array(pylist, self.sc._gateway.jvm.java.lang.Integer)
-        return java_array
+        return self._new_java_array(pylist, self.sc._gateway.jvm.java.lang.Integer)
 
     def spark_version(self):
         return self.sc.version

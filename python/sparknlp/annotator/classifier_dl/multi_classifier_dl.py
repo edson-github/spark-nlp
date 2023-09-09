@@ -217,13 +217,13 @@ class MultiClassifierDLApproach(AnnotatorApproach, EvaluationDLParams, Classifie
             classname="com.johnsnowlabs.nlp.annotators.classifier.dl.MultiClassifierDLApproach")
         self._setDefault(
             maxEpochs=10,
-            lr=float(0.001),
+            lr=0.001,
             batchSize=64,
-            validationSplit=float(0.0),
-            threshold=float(0.5),
+            validationSplit=0.0,
+            threshold=0.5,
             randomSeed=44,
             shufflePerEpoch=False,
-            enableOutputLogs=False
+            enableOutputLogs=False,
         )
 
 
@@ -335,9 +335,7 @@ class MultiClassifierDLModel(AnnotatorModel, HasStorageRef, HasEngine):
             classname=classname,
             java_model=java_model
         )
-        self._setDefault(
-            threshold=float(0.5)
-        )
+        self._setDefault(threshold=0.5)
 
     configProtoBytes = Param(Params._dummy(), "configProtoBytes",
                              "ConfigProto from tensorflow, serialized into byte array. Get with config_proto.SerializeToString()",

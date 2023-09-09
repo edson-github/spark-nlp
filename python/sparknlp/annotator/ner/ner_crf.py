@@ -247,9 +247,9 @@ class NerCrfApproach(AnnotatorApproach, NerApproach):
             maxEpochs=1000,
             l2=float(1),
             c0=2250000,
-            lossEps=float(1e-3),
+            lossEps=0.001,
             verbose=4,
-            includeConfidence=False
+            includeConfidence=False,
         )
 
 

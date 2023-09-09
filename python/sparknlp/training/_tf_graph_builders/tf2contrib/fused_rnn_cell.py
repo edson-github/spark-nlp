@@ -160,11 +160,10 @@ class TimeReversedFusedRNN(FusedRNNCell):
         """
         if isinstance(t, list):
             return list(reversed(t))
+        if lengths is None:
+            return array_ops.reverse_v2(t, [0])
         else:
-            if lengths is None:
-                return array_ops.reverse_v2(t, [0])
-            else:
-                return array_ops.reverse_sequence(t, lengths, 0, 1)
+            return array_ops.reverse_sequence(t, lengths, 0, 1)
 
     def __call__(self,
                  inputs,

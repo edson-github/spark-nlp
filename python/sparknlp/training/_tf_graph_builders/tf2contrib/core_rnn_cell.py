@@ -78,15 +78,15 @@ class _Linear(object):
         else:
             self._is_sequence = True
 
-        # Calculate the total size of arguments on dimension 1.
-        total_arg_size = 0
         shapes = [a.get_shape() for a in args]
+        total_arg_size = 0
         for shape in shapes:
             if shape.ndims != 2:
-                raise ValueError("linear is expecting 2D arguments: %s" % shapes)
+                raise ValueError(f"linear is expecting 2D arguments: {shapes}")
             if shape.dims[1].value is None:
-                raise ValueError("linear expects shape[1] to be provided for shape %s, "
-                                 "but saw %s" % (shape, shape[1]))
+                raise ValueError(
+                    f"linear expects shape[1] to be provided for shape {shape}, but saw {shape[1]}"
+                )
             else:
                 total_arg_size += shape.dims[1].value
 
@@ -151,15 +151,15 @@ def _linear(args,
     if not nest.is_sequence(args):
         args = [args]
 
-    # Calculate the total size of arguments on dimension 1.
-    total_arg_size = 0
     shapes = [a.get_shape() for a in args]
+    total_arg_size = 0
     for shape in shapes:
         if shape.ndims != 2:
-            raise ValueError("linear is expecting 2D arguments: %s" % shapes)
+            raise ValueError(f"linear is expecting 2D arguments: {shapes}")
         if shape.dims[1].value is None:
-            raise ValueError("linear expects shape[1] to be provided for shape %s, "
-                             "but saw %s" % (shape, shape[1]))
+            raise ValueError(
+                f"linear expects shape[1] to be provided for shape {shape}, but saw {shape[1]}"
+            )
         else:
             total_arg_size += shape.dims[1].value
 
@@ -239,7 +239,7 @@ class EmbeddingWrapper(RNNCell):
         return self._cell.output_size
 
     def zero_state(self, batch_size, dtype):
-        with ops.name_scope(type(self).__name__ + "ZeroState", values=[batch_size]):
+        with ops.name_scope(f"{type(self).__name__}ZeroState", values=[batch_size]):
             return self._cell.zero_state(batch_size, dtype)
 
     def call(self, inputs, state):
@@ -254,11 +254,7 @@ class EmbeddingWrapper(RNNCell):
                 sqrt3 = math.sqrt(3)  # Uniform(-sqrt(3), sqrt(3)) has variance=1.
                 initializer = init_ops.random_uniform_initializer(-sqrt3, sqrt3)
 
-            if isinstance(state, tuple):
-                data_type = state[0].dtype
-            else:
-                data_type = state.dtype
-
+            data_type = state[0].dtype if isinstance(state, tuple) else state.dtype
             embedding = vs.get_variable(
                 "embedding", [self._embedding_classes, self._embedding_size],
                 initializer=initializer,
@@ -315,7 +311,7 @@ class InputProjectionWrapper(RNNCell):
         return self._cell.output_size
 
     def zero_state(self, batch_size, dtype):
-        with ops.name_scope(type(self).__name__ + "ZeroState", values=[batch_size]):
+        with ops.name_scope(f"{type(self).__name__}ZeroState", values=[batch_size]):
             return self._cell.zero_state(batch_size, dtype)
 
     def call(self, inputs, state):
@@ -371,7 +367,7 @@ class OutputProjectionWrapper(RNNCell):
         return self._output_size
 
     def zero_state(self, batch_size, dtype):
-        with ops.name_scope(type(self).__name__ + "ZeroState", values=[batch_size]):
+        with ops.name_scope(f"{type(self).__name__}ZeroState", values=[batch_size]):
             return self._cell.zero_state(batch_size, dtype)
 
     def call(self, inputs, state):

@@ -98,6 +98,5 @@ class CoNLLU(ExtendedJavaWrapper):
         jSession = spark._jsparkSession
 
         jdf = self._java_obj.readDataset(jSession, path, read_as)
-        dataframe = self.getDataFrame(spark, jdf)
-        return dataframe
+        return self.getDataFrame(spark, jdf)
 

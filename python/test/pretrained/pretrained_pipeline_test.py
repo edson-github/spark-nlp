@@ -43,7 +43,7 @@ class PretrainedPipelineTextInputTest(unittest.TestCase):
 class PretrainedPipelineImageSetUp(unittest.TestCase):
 
     def setUp(self):
-        self.images_path = os.getcwd() + "/../src/test/resources/image/"
+        self.images_path = f"{os.getcwd()}/../src/test/resources/image/"
         self.pipeline = PretrainedPipeline("pipeline_image_classifier_vit_dogs", "en")
 
 
@@ -54,7 +54,7 @@ class PretrainedPipelineImageInputTest(PretrainedPipelineImageSetUp, unittest.Te
         super(PretrainedPipelineImageInputTest, self).setUp()
 
     def runTest(self):
-        image = self.images_path + "chihuahua.jpg"
+        image = f"{self.images_path}chihuahua.jpg"
 
         annotations_result = self.pipeline.fullAnnotate(image)
 
@@ -62,7 +62,10 @@ class PretrainedPipelineImageInputTest(PretrainedPipelineImageSetUp, unittest.Te
         for result in annotations_result:
             self.assertTrue(len(result) > 0)
 
-        images = [self.images_path + "chihuahua.jpg", self.images_path + "egyptian_cat.jpeg"]
+        images = [
+            f"{self.images_path}chihuahua.jpg",
+            f"{self.images_path}egyptian_cat.jpeg",
+        ]
 
         annotations_result = self.pipeline.fullAnnotate(images)
 
@@ -78,7 +81,7 @@ class PretrainedPipelineImagesInputTest(PretrainedPipelineImageSetUp, unittest.T
         super(PretrainedPipelineImagesInputTest, self).setUp()
 
     def runTest(self):
-        image = self.images_path + "chihuahua.jpg"
+        image = f"{self.images_path}chihuahua.jpg"
 
         annotations_result = self.pipeline.fullAnnotateImage(image)
 
@@ -86,7 +89,10 @@ class PretrainedPipelineImagesInputTest(PretrainedPipelineImageSetUp, unittest.T
         for result in annotations_result:
             self.assertTrue(len(result) > 0)
 
-        images = [self.images_path + "chihuahua.jpg", self.images_path + "egyptian_cat.jpeg"]
+        images = [
+            f"{self.images_path}chihuahua.jpg",
+            f"{self.images_path}egyptian_cat.jpeg",
+        ]
 
         annotations_result = self.pipeline.fullAnnotateImage(images)
 
@@ -99,8 +105,8 @@ class PretrainedPipelineImagesInputTest(PretrainedPipelineImageSetUp, unittest.T
 class PretrainedPipelineAudioInputTest(unittest.TestCase):
 
     def setUp(self):
-        audio_csv = os.getcwd() + "/../src/test/resources/audio/csv/audio_floats.csv"
-        self.audio_data = list()
+        audio_csv = f"{os.getcwd()}/../src/test/resources/audio/csv/audio_floats.csv"
+        self.audio_data = []
         audio_file = open(audio_csv, 'r')
         csv_lines = audio_file.readlines()
         for csv_line in csv_lines:

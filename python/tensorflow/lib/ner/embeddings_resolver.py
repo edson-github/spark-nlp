@@ -24,7 +24,7 @@ class TokenEmbeddings:
             for (piece, is_start, vector) in zip(pieces, is_word_starts, embeddings)]
     
     def __str__(self):
-        return 'TokenEmbeddings({}, {}, [{}])'.format(self.piece, self.is_word_start, np.shape(self.vector))
+        return f'TokenEmbeddings({self.piece}, {self.is_word_start}, [{np.shape(self.vector)}])'
 
     def __repr__(self):
         return self.__str__()
@@ -34,7 +34,7 @@ class EmbeddingsDbResolver:
     
     @staticmethod
     def get_index_name(prefix, dim):
-        return prefix + '-' + str(dim)
+        return f'{prefix}-{str(dim)}'
     
     @staticmethod
     def read_from_file(glove_file, dim, index_file = 'embeddings_index', 
@@ -67,10 +67,10 @@ class EmbeddingsDbResolver:
                 word = items[0]
                 vector = [float(x) for x in items[1:]]
                 if num % portion == portion - 1:
-                    print('read lines: {}'.format(num))
+                    print(f'read lines: {num}')
                     wb.write()
                     wb = None
-                
+
                 if not wb:
                     wb = self.db.write_batch()
 
@@ -101,9 +101,9 @@ class EmbeddingsDbResolver:
         """
         sentence - array of words
         """
-        embeddings =  list([self.get_embeddings(word) for word in sentence])
+        embeddings = [self.get_embeddings(word) for word in sentence]
         is_word_start = [True] * len(sentence)
-        
+
         return TokenEmbeddings.create_sentence(sentence, is_word_start, embeddings)
 
             
@@ -126,11 +126,11 @@ class BertEmbeddingsResolver:
         self.max_length = max_length
         vocab_file = os.path.join(model_folder, 'vocab.txt')
         self.tokenizer = FullTokenizer(vocab_file, do_lower_case = lowercase)
-        
+
         # 2. Read Config
-        config_file = os.path.join(model_folder, 'bert_config.json')        
+        config_file = os.path.join(model_folder, 'bert_config.json')
         self.config = BertConfig.from_json_file(config_file)
-        
+
         # 3. Create Model
         self.session = tf.Session()
         self.token_ids_op = tf.placeholder(tf.int32, shape=(None, max_length), name='token_ids')
@@ -138,15 +138,16 @@ class BertEmbeddingsResolver:
                           is_training = False, 
                           input_ids = self.token_ids_op, 
                           use_one_hot_embeddings = False)
-        
+
         # 4. Restore Trained Model
         self.saver = tf.train.Saver()
         ckpt_file = os.path.join(model_folder, 'bert_model.ckpt')
         self.saver.restore(self.session, ckpt_file)
-        
+
         hidden_layers = self.config.num_hidden_layers
         self.embeddings_op = tf.get_default_graph().get_tensor_by_name(
-            "bert/encoder/Reshape_{}:0".format(hidden_layers + 1))
+            f"bert/encoder/Reshape_{hidden_layers + 1}:0"
+        )
         
     def tokenize_sentence(self, tokens, add_service_tokens = True):
         result = []
@@ -162,14 +163,13 @@ class BertEmbeddingsResolver:
             if len(result) > self.max_length - 2:
                 result = result[:self.max_length -2]
                 is_word_start = is_word_start[:self.max_length -2]
-            
+
             result = ['[CLS]'] + result + ['[SEP]']
             is_word_start = [False] + is_word_start + [False]
-        else:
-            if len(result) > self.max_length:
-                result = result[:self.max_length]
-                is_word_start = is_word_start[:self.max_length]
-        
+        elif len(result) > self.max_length:
+            result = result[:self.max_length]
+            is_word_start = is_word_start[:self.max_length]
+
         return (result, is_word_start)
 
     def resolve_sentences(self, sentences):

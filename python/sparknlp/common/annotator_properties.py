@@ -47,20 +47,17 @@ class AnnotatorProperties(Params):
         *value : List[str]
             Input columns for the annotator
         """
-        if type(value[0]) == str or type(value[0]) == list:
-            self.inputColsValidation(value)
-            if len(value) == 1 and type(value[0]) == list:
-                return self._set(inputCols=value[0])
-            else:
-                return self._set(inputCols=list(value))
-        else:
+        if type(value[0]) not in [str, list]:
             raise TypeError("InputCols datatype not supported. It must be either str or list")
+        self.inputColsValidation(value)
+        return (
+            self._set(inputCols=value[0])
+            if len(value) == 1 and type(value[0]) == list
+            else self._set(inputCols=list(value))
+        )
 
     def inputColsValidation(self, value):
-        actual_columns = len(value)
-        if type(value[0]) == list:
-            actual_columns = len(value[0])
-
+        actual_columns = len(value[0]) if type(value[0]) == list else len(value)
         expected_columns = len(self.inputAnnotatorTypes)
 
         if len(self.optionalInputAnnotatorTypes) == 0:
@@ -70,8 +67,11 @@ class AnnotatorProperties(Params):
                     f"Provided column amount: {actual_columns}. "
                     f"Which should be columns from the following annotators: {self.inputAnnotatorTypes}")
         else:
-            expected_columns = expected_columns + len(self.optionalInputAnnotatorTypes)
-            if not (actual_columns == len(self.inputAnnotatorTypes) or actual_columns == expected_columns):
+            expected_columns += len(self.optionalInputAnnotatorTypes)
+            if actual_columns not in [
+                len(self.inputAnnotatorTypes),
+                expected_columns,
+            ]:
                 raise TypeError(
                     f"setInputCols in {self.uid} expecting at least {len(self.inputAnnotatorTypes)} columns. "
                     f"Provided column amount: {actual_columns}. "

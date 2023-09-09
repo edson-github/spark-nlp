@@ -151,7 +151,7 @@ class StopWordsCleaner(AnnotatorModel):
         """
         return self._set(locale=value)
 
-    def loadDefaultStopWords(language="english"):
+    def loadDefaultStopWords(self):
         """Loads the default stop words for the given language.
 
         Supported languages: danish, dutch, english, finnish, french, german,
@@ -165,7 +165,7 @@ class StopWordsCleaner(AnnotatorModel):
         """
         from pyspark.ml.wrapper import _jvm
         stopWordsObj = _jvm().org.apache.spark.ml.feature.StopWordsRemover
-        return list(stopWordsObj.loadDefaultStopWords(language))
+        return list(stopWordsObj.loadDefaultStopWords(self))
 
     @staticmethod
     def pretrained(name="stopwords_en", lang="en", remote_loc=None):

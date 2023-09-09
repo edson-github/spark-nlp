@@ -29,18 +29,22 @@ class ChunkTokenizerTestSpec(unittest.TestCase):
 
     def runTest(self):
         document_assembler = DocumentAssembler() \
-            .setInputCol("text") \
-            .setOutputCol("document")
+                .setInputCol("text") \
+                .setOutputCol("document")
         tokenizer = Tokenizer() \
-            .setInputCols(["document"]) \
-            .setOutputCol("token")
-        entity_extractor = TextMatcher() \
-            .setInputCols(['document', 'token']) \
-            .setOutputCol("entity") \
-            .setEntities(path="file:///" + os.getcwd() + "/../src/test/resources/entity-extractor/test-chunks.txt")
+                .setInputCols(["document"]) \
+                .setOutputCol("token")
+        entity_extractor = (
+            TextMatcher()
+            .setInputCols(['document', 'token'])
+            .setOutputCol("entity")
+            .setEntities(
+                path=f"file:///{os.getcwd()}/../src/test/resources/entity-extractor/test-chunks.txt"
+            )
+        )
         chunk_tokenizer = ChunkTokenizer() \
-            .setInputCols(['entity']) \
-            .setOutputCol('chunk_token')
+                .setInputCols(['entity']) \
+                .setOutputCol('chunk_token')
 
         pipeline = Pipeline(stages=[document_assembler, tokenizer, entity_extractor, chunk_tokenizer])
 

@@ -30,16 +30,21 @@ class LemmatizerTestSpec(unittest.TestCase):
 
     def runTest(self):
         document_assembler = DocumentAssembler() \
-            .setInputCol("text") \
-            .setOutputCol("document")
+                .setInputCol("text") \
+                .setOutputCol("document")
         tokenizer = Tokenizer() \
-            .setInputCols(["document"]) \
-            .setOutputCol("token")
-        lemmatizer = Lemmatizer() \
-            .setInputCols(["token"]) \
-            .setOutputCol("lemma") \
-            .setDictionary(path="file:///" + os.getcwd() + "/../src/test/resources/lemma-corpus-small/lemmas_small.txt",
-                           key_delimiter="->", value_delimiter="\t")
+                .setInputCols(["document"]) \
+                .setOutputCol("token")
+        lemmatizer = (
+            Lemmatizer()
+            .setInputCols(["token"])
+            .setOutputCol("lemma")
+            .setDictionary(
+                path=f"file:///{os.getcwd()}/../src/test/resources/lemma-corpus-small/lemmas_small.txt",
+                key_delimiter="->",
+                value_delimiter="\t",
+            )
+        )
         assembled = document_assembler.transform(self.data)
         tokenized = tokenizer.fit(assembled).transform(assembled)
         lemmatizer.fit(tokenized).transform(tokenized).show()
@@ -50,7 +55,7 @@ class LemmatizerWithTrainingDataSetTestSpec(unittest.TestCase):
 
     def setUp(self):
         self.spark = SparkContextForTest.spark
-        self.conllu_file = "file:///" + os.getcwd() + "/../src/test/resources/conllu/en.test.lemma.conllu"
+        self.conllu_file = f"file:///{os.getcwd()}/../src/test/resources/conllu/en.test.lemma.conllu"
 
     def runTest(self):
         test_dataset = self.spark.createDataFrame([["So what happened?"]]).toDF("text")

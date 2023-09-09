@@ -352,8 +352,7 @@ class LSTMBlockCell(LayerRNNCell):
 
     def build(self, inputs_shape):
         if not inputs_shape.dims[1].value:
-            raise ValueError(
-                "Expecting inputs_shape[1] to be set: %s" % str(inputs_shape))
+            raise ValueError(f"Expecting inputs_shape[1] to be set: {str(inputs_shape)}")
         input_size = inputs_shape.dims[1].value
         self._kernel = self.add_variable(
             self._names["W"], [input_size + self._num_units, self._num_units * 4])
@@ -468,7 +467,7 @@ class LSTMBlockWrapper(base_layer.Layer):
             inputs = array_ops.stack(inputs)
         inputs_shape = inputs.get_shape().with_rank(3)
         if not inputs_shape[2]:
-            raise ValueError("Expecting inputs_shape[2] to be set: %s" % inputs_shape)
+            raise ValueError(f"Expecting inputs_shape[2] to be set: {inputs_shape}")
         batch_size = inputs_shape.dims[1].value
         if batch_size is None:
             batch_size = array_ops.shape(inputs)[1]

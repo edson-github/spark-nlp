@@ -48,9 +48,9 @@ class DatasetEncoder:
                 words.append(item.piece)
 
                 if item.is_word_start:
-                    assert i < len(sentence), 'i = {} is more or equal than length of {}, during zip with {}'.format(i,
-                                                                                                                     sentence,
-                                                                                                                     word_embeddings)
+                    assert i < len(
+                        sentence
+                    ), f'i = {i} is more or equal than length of {sentence}, during zip with {word_embeddings}'
                     tag = sentence[i][1]
                     i += 1
                 else:

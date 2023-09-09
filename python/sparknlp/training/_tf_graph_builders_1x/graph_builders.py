@@ -106,12 +106,7 @@ class NerTFGraphBuilder(TFGraphBuilder):
         return True
 
     def get_model_filename(self):
-        return "blstm_{}_{}_{}_{}.pb".format(
-            self.get_build_param("ntags"),
-            self.get_build_param("embeddings_dim"),
-            self.get_build_param("lstm_size"),
-            self.get_build_param("nchars"),
-        )
+        return f'blstm_{self.get_build_param("ntags")}_{self.get_build_param("embeddings_dim")}_{self.get_build_param("lstm_size")}_{self.get_build_param("nchars")}.pb'
 
     def get_model_build_params(self):
         return {
@@ -236,7 +231,7 @@ class TFGraphBuilderFactory:
                 model_filename = model.get_model_filename()
 
         model.build(model_location, model_filename)
-        print("{} graph exported to {}/{}".format(model_name, model_location, model_filename))
+        print(f"{model_name} graph exported to {model_location}/{model_filename}")
 
     @staticmethod
     def print_model_params(model_name):

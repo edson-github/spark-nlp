@@ -136,7 +136,7 @@ class CometTestSpec(unittest.TestCase):
     def test_visualization_logging(self):
         with open(self.viz_path) as viz:
             viz = viz.read()
-        self.logger.log_visualization(viz, name=f"spark_nlp_display_viz.html")
+        self.logger.log_visualization(viz, name="spark_nlp_display_viz.html")
 
     def test_completed_run(self):
         list_of_files = glob.glob(f"{self.OUTPUT_LOG_PATH}/*.log")

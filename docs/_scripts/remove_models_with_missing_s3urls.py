@@ -39,6 +39,6 @@ for matching_file in files:
 
         else:
             print(f"Copy S3 URI not in {matching_file}")
-            
+
     except Exception as e:
-        print(str(e) + " in " + matching_file)
+        print(f"{str(e)} in {matching_file}")

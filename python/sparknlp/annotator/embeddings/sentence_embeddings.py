@@ -126,9 +126,7 @@ class SentenceEmbeddings(AnnotatorModel, HasEmbeddingsProperties, HasStorageRef)
         [type]
             [description]
         """
-        if strategy == "AVERAGE":
-            return self._set(poolingStrategy=strategy)
-        elif strategy == "SUM":
+        if strategy in ["AVERAGE", "SUM"]:
             return self._set(poolingStrategy=strategy)
         else:
             return self._set(poolingStrategy="AVERAGE")

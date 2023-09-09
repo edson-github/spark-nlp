@@ -30,14 +30,18 @@ class RegexMatcherTestSpec(unittest.TestCase):
 
     def runTest(self):
         document_assembler = DocumentAssembler() \
-            .setInputCol("text") \
-            .setOutputCol("document")
-        regex_matcher = RegexMatcher() \
-            .setInputCols(['document']) \
-            .setStrategy("MATCH_ALL") \
-            .setExternalRules(path="file:///" + os.getcwd() + "/../src/test/resources/regex-matcher/rules.txt",
-                              delimiter=",") \
+                .setInputCol("text") \
+                .setOutputCol("document")
+        regex_matcher = (
+            RegexMatcher()
+            .setInputCols(['document'])
+            .setStrategy("MATCH_ALL")
+            .setExternalRules(
+                path=f"file:///{os.getcwd()}/../src/test/resources/regex-matcher/rules.txt",
+                delimiter=",",
+            )
             .setOutputCol("regex")
+        )
         assembled = document_assembler.transform(self.data)
         regex_matcher.fit(assembled).transform(assembled).show()
 

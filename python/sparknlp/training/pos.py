@@ -99,5 +99,4 @@ class POS(ExtendedJavaWrapper):
         jSession = spark._jsparkSession
 
         jdf = self._java_obj.readDataset(jSession, path, delimiter, outputPosCol, outputDocumentCol, outputTextCol)
-        dataframe = self.getDataFrame(spark, jdf)
-        return dataframe
+        return self.getDataFrame(spark, jdf)

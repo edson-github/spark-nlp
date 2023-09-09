@@ -83,12 +83,12 @@ class ResourceDownloader(object):
         AnnotatorModel
             Loaded pretrained annotator/pipeline
         """
-        print(name + " download started this may take some time.")
+        print(f"{name} download started this may take some time.")
         file_size = _internal._GetResourceSize(name, language, remote_loc).apply()
         if file_size == "-1":
             print("Can not find the model to download please check the name!")
         else:
-            print("Approximate size to download " + file_size)
+            print(f"Approximate size to download {file_size}")
             stop_threads = False
             t1 = threading.Thread(target=printProgress, args=(lambda: stop_threads,))
             t1.start()
@@ -138,12 +138,12 @@ class ResourceDownloader(object):
         PipelineModel
             The loaded pipeline
         """
-        print(name + " download started this may take some time.")
+        print(f"{name} download started this may take some time.")
         file_size = _internal._GetResourceSize(name, language, remote_loc).apply()
         if file_size == "-1":
             print("Can not find the model to download please check the name!")
         else:
-            print("Approx size to download " + file_size)
+            print(f"Approx size to download {file_size}")
             stop_threads = False
             t1 = threading.Thread(target=printProgress, args=(lambda: stop_threads,))
             t1.start()

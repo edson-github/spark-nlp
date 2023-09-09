@@ -53,5 +53,4 @@ class SpacyToAnnotation(ExtendedJavaWrapper):
         jSession = spark._jsparkSession
 
         jdf = self._java_obj.readJsonFileJava(jSession, jsonFilePath, params)
-        annotation_dataset = self.getDataFrame(spark, jdf)
-        return annotation_dataset
+        return self.getDataFrame(spark, jdf)

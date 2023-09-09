@@ -26,23 +26,29 @@ class SpellCheckerTestSpec(unittest.TestCase):
 
     def setUp(self):
         self.prediction_data = SparkContextForTest.data
-        text_file = "file:///" + os.getcwd() + "/../src/test/resources/spell/sherlockholmes.txt"
+        text_file = (
+            f"file:///{os.getcwd()}/../src/test/resources/spell/sherlockholmes.txt"
+        )
         self.train_data = SparkContextForTest.spark.read.text(text_file)
         self.train_data = self.train_data.withColumnRenamed("value", "text")
 
     def runTest(self):
         document_assembler = DocumentAssembler() \
-            .setInputCol("text") \
-            .setOutputCol("document")
+                .setInputCol("text") \
+                .setOutputCol("document")
 
         tokenizer = Tokenizer() \
-            .setInputCols(["document"]) \
-            .setOutputCol("token")
+                .setInputCols(["document"]) \
+                .setOutputCol("token")
 
-        spell_checker = NorvigSweetingApproach() \
-            .setInputCols(["token"]) \
-            .setOutputCol("spell") \
-            .setDictionary("file:///" + os.getcwd() + "/../src/test/resources/spell/words.txt")
+        spell_checker = (
+            NorvigSweetingApproach()
+            .setInputCols(["token"])
+            .setOutputCol("spell")
+            .setDictionary(
+                f"file:///{os.getcwd()}/../src/test/resources/spell/words.txt"
+            )
+        )
 
         pipeline = Pipeline(stages=[
             document_assembler,

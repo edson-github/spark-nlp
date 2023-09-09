@@ -14,15 +14,12 @@
 
 """Package that contains classes for integration with Comet."""
 
+
 try:
     import comet_ml
-except AttributeError:
+except (AttributeError, ModuleNotFoundError):
     # Python 3.6
     comet_ml = None
-except ModuleNotFoundError:
-    # Python 3.7+
-    comet_ml = None
-
 import threading
 import time
 import os
@@ -160,34 +157,33 @@ class CometLogger:
         **experiment_kwargs,
     ):
         if mode == "offline":
-            if experiment_id is not None:
-                return comet_ml.ExistingOfflineExperiment(
+            return (
+                comet_ml.ExistingOfflineExperiment(
                     previous_experiment=experiment_id,
                     workspace=workspace,
                     project_name=project_name,
                     **experiment_kwargs,
                 )
-
-            return comet_ml.OfflineExperiment(
-                workspace=workspace,
-                project_name=project_name,
-                **experiment_kwargs,
-            )
-
-        else:
-            if experiment_id is not None:
-                return comet_ml.ExistingExperiment(
-                    previous_experiment=experiment_id,
+                if experiment_id is not None
+                else comet_ml.OfflineExperiment(
                     workspace=workspace,
                     project_name=project_name,
                     **experiment_kwargs,
                 )
-
-            return comet_ml.Experiment(
+            )
+        if experiment_id is not None:
+            return comet_ml.ExistingExperiment(
+                previous_experiment=experiment_id,
                 workspace=workspace,
                 project_name=project_name,
                 **experiment_kwargs,
             )
+
+        return comet_ml.Experiment(
+            workspace=workspace,
+            project_name=project_name,
+            **experiment_kwargs,
+        )
 
     def log_pipeline_parameters(self, pipeline, stages=None):
         """Iterates over the different stages in a pyspark PipelineModel object
@@ -399,20 +395,17 @@ class CometLogger:
         str
             A single line from the file
         """
-        fp = open(filename)
-
-        line = ""
-        while self._watch_file:
-            partial_line = fp.readline()
-            if len(partial_line) != 0:
-                line += partial_line
-                if line.endswith("\n"):
-                    yield line
-                    line = ""
-            else:
-                time.sleep(interval)
-
-        fp.close()
+        with open(filename) as fp:
+            line = ""
+            while self._watch_file:
+                partial_line = fp.readline()
+                if len(partial_line) != 0:
+                    line += partial_line
+                    if line.endswith("\n"):
+                        yield line
+                        line = ""
+                else:
+                    time.sleep(interval)
 
     def _monitor_log_file(self, filename, interval):
         # Wait for file to be created:
@@ -443,8 +436,7 @@ class CometLogger:
 
     def _parse_run_parameters(self, parts):
         parameters = parts[2:]
-        formatted_parameters = self._convert_log_entry_to_dict(parameters)
-        return formatted_parameters
+        return self._convert_log_entry_to_dict(parameters)
 
     def _parse_log_entry(self, lines):
         for line in lines:

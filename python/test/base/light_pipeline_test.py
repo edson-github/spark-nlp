@@ -104,18 +104,18 @@ class LightPipelineNoisyTextInputTest(LightPipelineTextSetUp, unittest.TestCase)
 class LightPipelineImageSetUp(unittest.TestCase):
 
     def setUp(self):
-        self.images_path = os.getcwd() + "/../src/test/resources/image/"
+        self.images_path = f"{os.getcwd()}/../src/test/resources/image/"
         self.data = SparkSessionForTest.spark.read.format("image") \
-            .load(path=self.images_path)
+                .load(path=self.images_path)
 
         image_assembler = ImageAssembler() \
-            .setInputCol("image") \
-            .setOutputCol("image_assembler")
+                .setInputCol("image") \
+                .setOutputCol("image_assembler")
 
         image_classifier = ViTForImageClassification \
-            .pretrained() \
-            .setInputCols("image_assembler") \
-            .setOutputCol("class")
+                .pretrained() \
+                .setInputCols("image_assembler") \
+                .setOutputCol("class")
 
         pipeline = Pipeline(stages=[
             image_assembler,
@@ -132,7 +132,7 @@ class LightPipelineImageInputTest(LightPipelineImageSetUp, unittest.TestCase):
         super().setUp()
 
     def runTest(self):
-        image = self.images_path + "hippopotamus.JPEG"
+        image = f"{self.images_path}hippopotamus.JPEG"
         light_pipeline = LightPipeline(self.vit_model)
 
         annotations_result = light_pipeline.fullAnnotateImage(image)
@@ -158,7 +158,10 @@ class LightPipelineImagesInputTest(LightPipelineImageSetUp, unittest.TestCase):
         super().setUp()
 
     def runTest(self):
-        images = [self.images_path + "hippopotamus.JPEG", self.images_path + "egyptian_cat.jpeg"]
+        images = [
+            f"{self.images_path}hippopotamus.JPEG",
+            f"{self.images_path}egyptian_cat.jpeg",
+        ]
         light_pipeline = LightPipeline(self.vit_model)
 
         annotations_result = light_pipeline.fullAnnotate(images)
@@ -181,11 +184,13 @@ class LightPipelineImagesInputTest(LightPipelineImageSetUp, unittest.TestCase):
 class LightPipelineAudioInputTest(unittest.TestCase):
 
     def setUp(self):
-        audio_json = os.getcwd() + "/../src/test/resources/audio/json/audio_floats.json"
-        audio_csv = os.getcwd() + "/../src/test/resources/audio/csv/audio_floats.csv"
+        audio_json = (
+            f"{os.getcwd()}/../src/test/resources/audio/json/audio_floats.json"
+        )
+        audio_csv = f"{os.getcwd()}/../src/test/resources/audio/csv/audio_floats.csv"
         self.data = SparkSessionForTest.spark.read.option("inferSchema", value=True).json(audio_json) \
-            .select(col("float_array").cast("array<float>").alias("audio_content"))
-        self.audio_data = list()
+                .select(col("float_array").cast("array<float>").alias("audio_content"))
+        self.audio_data = []
         audio_file = open(audio_csv, 'r')
         csv_lines = audio_file.readlines()
         for csv_line in csv_lines:
@@ -228,7 +233,9 @@ class LightPipelineAudioInputTest(unittest.TestCase):
 class LightPipelineTapasInputTest(unittest.TestCase):
 
     def setUp(self):
-        table_json_source = os.getcwd() + "/../src/test/resources/tapas/rich_people.json"
+        table_json_source = (
+            f"{os.getcwd()}/../src/test/resources/tapas/rich_people.json"
+        )
         with open(table_json_source, "rt") as F:
             self.table = "".join(F.readlines())
 
@@ -360,22 +367,26 @@ class LightPipelineWrongInputColsTest(unittest.TestCase):
         self.data = SparkSessionForTest.spark.createDataFrame([[self.sample_text]]).toDF("text")
 
         document_assembler = DocumentAssembler() \
-            .setInputCol("text") \
-            .setOutputCol("document")
+                .setInputCol("text") \
+                .setOutputCol("document")
 
         sentence_detector = SentenceDetector() \
-            .setInputCols(["document"]) \
-            .setOutputCol("sentence")
+                .setInputCols(["document"]) \
+                .setOutputCol("sentence")
 
         tokenizer = Tokenizer() \
-            .setInputCols(["sentence"]) \
-            .setOutputCol("my_token")
+                .setInputCols(["sentence"]) \
+                .setOutputCol("my_token")
 
-        regex_matcher = RegexMatcher() \
-            .setExternalRules(os.getcwd() + "/../src/test/resources/regex-matcher/rules.txt",  ",") \
-            .setInputCols(["my_token"]) \
-            .setOutputCol("regex") \
+        regex_matcher = (
+            RegexMatcher()
+            .setExternalRules(
+                f"{os.getcwd()}/../src/test/resources/regex-matcher/rules.txt", ","
+            )
+            .setInputCols(["my_token"])
+            .setOutputCol("regex")
             .setStrategy("MATCH_ALL")
+        )
 
         self.pipeline = Pipeline().setStages([document_assembler, sentence_detector, tokenizer, regex_matcher])
 

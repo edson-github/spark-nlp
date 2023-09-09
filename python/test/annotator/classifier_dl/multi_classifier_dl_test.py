@@ -25,10 +25,14 @@ from test.util import SparkSessionForTest
 @pytest.mark.slow
 class MultiClassifierDLTestSpec(unittest.TestCase):
     def setUp(self):
-        self.data = SparkSessionForTest.spark.read.option("header", "true") \
-            .csv(path="file:///" + os.getcwd() + "/../src/test/resources/classifier/e2e.csv") \
-            .withColumn("labels", split("mr", ", ")) \
+        self.data = (
+            SparkSessionForTest.spark.read.option("header", "true")
+            .csv(
+                path=f"file:///{os.getcwd()}/../src/test/resources/classifier/e2e.csv"
+            )
+            .withColumn("labels", split("mr", ", "))
             .drop("mr")
+        )
 
     def runTest(self):
         document_assembler = DocumentAssembler() \

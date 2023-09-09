@@ -141,11 +141,7 @@ def start(gpu=False,
 
     driver_cores = "*"
     for key, value in params.items():
-        if key == "spark.driver.cores":
-            driver_cores = f"{value}"
-        else:
-            driver_cores = "*"
-
+        driver_cores = f"{value}" if key == "spark.driver.cores" else "*"
     class SparkNLPConfig:
 
         def __init__(self):
@@ -190,7 +186,7 @@ def start(gpu=False,
 
         for key, value in params.items():
             if key == "spark.jars.packages":
-                packages = spark_jars_packages + "," + value
+                packages = f"{spark_jars_packages},{value}"
                 builder.config(key, packages)
             else:
                 builder.config(key, value)
@@ -198,6 +194,9 @@ def start(gpu=False,
         return builder.getOrCreate()
 
     def start_with_realtime_output():
+
+
+
 
         class SparkWithCustomGateway:
 
@@ -231,7 +230,7 @@ def start(gpu=False,
 
                 for key, value in params.items():
                     if key == "spark.jars.packages":
-                        packages = spark_jars_packages + "," + value
+                        packages = f"{spark_jars_packages},{value}"
                         spark_conf.set(key, packages)
                     else:
                         spark_conf.set(key, value)
@@ -268,9 +267,6 @@ def start(gpu=False,
                 for line in iter(self.process.stderr.readline, b''):
                     if output_level == 0:
                         print(RED + '{0}'.format(line.decode('utf-8')) + RESET, end='')
-                    else:
-                        # output just info
-                        pass
 
             def shutdown(self):
                 self.spark_session.stop()
@@ -279,6 +275,7 @@ def start(gpu=False,
 
                 self.out_thread.join()
                 self.error_thread.join()
+
 
         return SparkWithCustomGateway()
 

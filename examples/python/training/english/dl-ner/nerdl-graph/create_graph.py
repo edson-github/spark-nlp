@@ -33,7 +33,7 @@ def create_graph(ntags, embeddings_dim, nchars, lstm_size = 128):
         return
     tf.disable_v2_behavior()
     tf.reset_default_graph()
-    model_name = 'blstm'+'_{}_{}_{}_{}'.format(ntags, embeddings_dim, lstm_size, nchars)
+    model_name = f'blstm_{ntags}_{embeddings_dim}_{lstm_size}_{nchars}'
     with tf.Session() as session:
         ner = NerModel(session=None, use_gpu_device=gpu_device)
         ner.add_cnn_char_repr(nchars, 25, 30)
@@ -44,7 +44,7 @@ def create_graph(ntags, embeddings_dim, nchars, lstm_size = 128):
         ner.add_training_op(5)
         ner.init_variables()
         saver = tf.train.Saver()
-        file_name = model_name + '.pb'
+        file_name = f'{model_name}.pb'
         tf.io.write_graph(ner.session.graph, './', file_name, False)
         ner.close()
         session.close()

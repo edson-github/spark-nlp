@@ -25,12 +25,13 @@ from test.util import SparkContextForTest
 @pytest.mark.slow
 class DeBertaForTokenClassificationTestSpec(unittest.TestCase, HasMaxSentenceLengthTests):
     def setUp(self):
-        self.data = SparkContextForTest.spark.read.option("header", "true") \
-            .csv(path="file:///" + os.getcwd() + "/../src/test/resources/embeddings/sentence_embeddings.csv")
+        self.data = SparkContextForTest.spark.read.option("header", "true").csv(
+            path=f"file:///{os.getcwd()}/../src/test/resources/embeddings/sentence_embeddings.csv"
+        )
 
         self.tested_annotator = DeBertaForTokenClassification.pretrained() \
-            .setInputCols(["document", "token"]) \
-            .setOutputCol("ner")
+                .setInputCols(["document", "token"]) \
+                .setOutputCol("ner")
 
     def test_run(self):
         document_assembler = DocumentAssembler() \

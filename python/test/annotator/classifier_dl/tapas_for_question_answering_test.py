@@ -24,7 +24,7 @@ from test.util import SparkContextForTest
 @pytest.mark.slow
 class TapasForQuestionAnsweringTestSpec(unittest.TestCase):
     def setUp(self):
-        with open(os.getcwd() + "/../src/test/resources/tapas/rich_people.json", "rt") as F:
+        with open(f"{os.getcwd()}/../src/test/resources/tapas/rich_people.json", "rt") as F:
             table_json_source = "".join(F.readlines())
 
         self.data = SparkContextForTest.spark.createDataFrame([
